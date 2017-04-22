@@ -1,5 +1,5 @@
-use audioblock::AudioBlock;
-use processblock::Port;
+use audiobuffer::*;
+use port::Port;
 use processblock::ProcessBlock;
 use processblock::SynthConfig;
 
@@ -24,6 +24,6 @@ impl Envelope{
 impl ProcessBlock for Envelope{
     fn setup(&mut self, config: &SynthConfig){
     }
-    fn process(&mut self, input: &Vec<AudioBlock>, output: &mut Vec<AudioBlock>){
+    fn process(&mut self, input: &ReadBufferVector, output: &WriteBufferVector){
     }
 }

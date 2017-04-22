@@ -1,5 +1,6 @@
+use audiobuffer::*;
 use processblock::ProcessBlock;
-use processblock::Port;
+use port::Port;
 use std::fmt;
 
 #[derive(Debug, Clone, Copy)]
@@ -18,6 +19,19 @@ pub struct Synth{
     blocks: Vec<Box<ProcessBlock>>,
     connections: Vec<Connection>,
     output: BlockId
+}
+
+#[derive(Debug)]
+pub struct SynthWork<'a>{
+    block: &'a mut Box<ProcessBlock>,
+    inputs: ReadBufferVector,
+    outputs: WriteBufferVector,
+}
+
+impl<'a> SynthWork<'a>{
+    fn work(&mut self){
+        self.block.process(&self.inputs, &self.outputs);
+    }
 }
 
 /*
@@ -59,6 +73,19 @@ impl Synth{
     }
 
     pub fn work(&mut self){
-        println!("Work!")
+        let workorder = self.calculate_work_order();
+        println!("Workorder is {:?}", workorder);
+        let buffer_size = 10;
+
+        let mut audiobuffers = Vec::new();
+        for _ in 0..self.connections.len() {
+            audiobuffers.push(AudioBuffer::new(buffer_size));
+        }
+
+        println!("Audio buffers ready: {:?}", audiobuffers);
+    }
+
+    fn calculate_work_order(&self) -> Vec<SynthWork>{
+        vec![]
     }
 }

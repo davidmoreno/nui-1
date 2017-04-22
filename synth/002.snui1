@@ -1,7 +1,0 @@
-[POLY]
-
-note = Samples()
-note.attack = MidiIn.note_on
-note.freq = MidiIn.freq
-
-output = note

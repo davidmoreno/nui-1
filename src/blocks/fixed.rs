@@ -1,5 +1,5 @@
-use audioblock::AudioBlock;
-use processblock::Port;
+use audiobuffer::*;
+use port::Port;
 use processblock::ProcessBlock;
 use processblock::SynthConfig;
 
@@ -22,8 +22,8 @@ impl Fixed{
 impl ProcessBlock for Fixed{
     fn setup(&mut self, config: &SynthConfig){
     }
-    fn process(&mut self, input: &Vec<AudioBlock>, output: &mut Vec<AudioBlock>){
-        for o in &mut output[0].data{
+    fn process(&mut self, input: &ReadBufferVector, output: &WriteBufferVector){
+        for o in output.get(OUT){
             *o = self.value;
         }
     }

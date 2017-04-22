@@ -1,7 +1,7 @@
-use audioblock::AudioBlock;
+use audiobuffer::*;
 use processblock::ProcessBlock;
 use processblock::SynthConfig;
-use processblock::Port;
+use port::Port;
 
 #[derive(Debug)]
 pub struct SinOsc{
@@ -29,8 +29,8 @@ impl ProcessBlock for SinOsc {
     fn setup(&mut self, config: &SynthConfig){
         self.sample_rate = config.sample_rate
     }
-    fn process(&mut self, input: &Vec<AudioBlock>, output: &mut Vec<AudioBlock>){
-        for (o, f, n) in izip!(&mut output[0].data, &input[0].data, &input[1].data){
+    fn process(&mut self, input: &ReadBufferVector, output: &WriteBufferVector){
+        for (o, f, n) in izip!(output.get(OUT), input.get(FREQ), input.get(NOTE_ON)){
             *o = 0.0;
         }
     }

@@ -1,5 +1,5 @@
-
-use audioblock::AudioBlock;
+use port::Port;
+use audiobuffer::*;
 use std::rc::Rc;
 use std::fmt;
 
@@ -10,10 +10,5 @@ pub struct SynthConfig{
 
 pub trait ProcessBlock : fmt::Debug{
     fn setup(&mut self, &SynthConfig);
-    fn process(&mut self, input: &Vec<AudioBlock>, output: &mut Vec<AudioBlock>);
-}
-
-#[derive(Debug)]
-pub struct Port{
-    pub nr: i8
+    fn process(&mut self, input: &ReadBufferVector, output: &WriteBufferVector);
 }

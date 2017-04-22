@@ -1,5 +1,5 @@
-use audioblock::AudioBlock;
-use processblock::Port;
+use audiobuffer::*;
+use port::Port;
 use processblock::ProcessBlock;
 use processblock::SynthConfig;
 
@@ -7,6 +7,7 @@ use processblock::SynthConfig;
 pub struct MidiIn{
 }
 
+pub const OUT:Port = Port{nr:0};
 pub const FREQ:Port = Port{nr:0};
 pub const NOTE_ON:Port = Port{nr:1};
 
@@ -30,8 +31,8 @@ impl MidiIn{
 impl ProcessBlock for MidiIn{
     fn setup(&mut self, config: &SynthConfig){
     }
-    fn process(&mut self, input: &Vec<AudioBlock>, output: &mut Vec<AudioBlock>){
-        for o in &mut output[0].data{
+    fn process(&mut self, input: &ReadBufferVector, output: &WriteBufferVector){
+        for o in output.get(OUT){
             *o = 440.0;
         }
     }

@@ -1,0 +1,20 @@
+poly: true
+
+blocks:
+  sin_osc: SinOsc
+  env: Evelope
+
+connections:
+  midi:FREQ: sin_osc:FREQ
+
+  midi:C1: env:ATTACK
+  midi:C2: env:DECAY
+  midi:C3: env.SUSTAIN
+  midi:C4: env.SUSTAIN_TIME
+  midi:C5: env.RELEASE
+  midi.NOTE_ON: env.NOTE_ON
+
+  sin_osc:OUTPUT: mul:A
+  env:OUTPUT: mul:B
+
+output: mul

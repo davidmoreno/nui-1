@@ -1,0 +1,10 @@
+poly: false
+
+blocks:
+  samples: Samples
+
+connections:
+  midi:NOTE_ON: samples:NOTE_ON
+  midi:FREQ: samples:FREQ
+
+output: samples
