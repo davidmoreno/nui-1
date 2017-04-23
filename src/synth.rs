@@ -2,70 +2,66 @@ use audiobuffer::*;
 use processblock::ProcessBlock;
 use port::Port;
 use std::fmt;
+use std::cell::RefCell;
 
 #[derive(Debug, Clone, Copy)]
-pub struct BlockId(i8);
+pub struct BlockId(usize);
 
 #[derive(Debug)]
-struct Connection{
-    bout: BlockId,
-    bin: BlockId,
-    pout: Port,
-    pin: Port
-}
-
-#[derive(Debug)]
-pub struct Synth{
-    blocks: Vec<Box<ProcessBlock>>,
-    connections: Vec<Connection>,
-    output: BlockId
-}
-
-#[derive(Debug)]
-pub struct SynthWork<'a>{
-    block: &'a mut Box<ProcessBlock>,
+struct ProcessBlockAtSynth{
+    block: Box<ProcessBlock>,
     inputs: ReadBufferVector,
     outputs: WriteBufferVector,
 }
 
-impl<'a> SynthWork<'a>{
+impl ProcessBlockAtSynth{
     fn work(&mut self){
         self.block.process(&self.inputs, &self.outputs);
     }
 }
 
-/*
-impl fmt::Debug for Synth{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result{
-        write!(f, "# Synth: {} blocks, {} connections\n", self.blocks.len(), self.connections.len());
-        for (n, m) in self.blocks.iter().enumerate() {
-            write!(f, "{} {:?}\n",n, m);
-        }
-        for (n, c) in self.connections.iter().enumerate() {
-            write!(f, "{} {:?}\n",n, c);
-        }
-        write!(f,"OUTPUT: {:?}", self.output)
-    }
+#[derive(Debug)]
+pub struct Synth{
+    blocks: Vec<ProcessBlockAtSynth>,
+    output: BlockId,
+    buffer_size: usize
 }
 
+
+/*
+Try to change how it works internally, to create all audiobuffers for output and input (input to
+0),  and at connect, change the input buffers. They are Rc so should work.
+
+If works, then the work order does not need synthwork, but just the list of blocks in the proper
+order.
 */
 impl Synth{
     pub fn new() -> Synth{
         Synth{
             blocks: Vec::new(),
-            connections: Vec::new(),
-            output: BlockId(127)
+            output: BlockId(127),
+            buffer_size: 128,
         }
     }
     pub fn connect(&mut self, block_out: BlockId, port_out: Port, block_in: BlockId, port_in: Port) -> &mut Self {
-        self.connections.push(Connection{bout:block_out, pout:port_out, bin:block_in, pin: port_in});
+        let audioblock = {
+            let real_block_out = &self.blocks[block_out.0];
+            real_block_out.outputs.get_rc(port_out).clone()
+        };
+        {
+            let real_block_in = &mut self.blocks[block_in.0];
+            real_block_in.inputs.set(port_in, audioblock);
+        }
         self
     }
 
     pub fn add(&mut self, block: Box<ProcessBlock>) -> BlockId{
         let n = self.blocks.len();
-        self.blocks.push(block);
-        BlockId(n as i8)
+        let inputs=ReadBufferVector::new(block.input_count(), self.buffer_size);
+        let outputs=WriteBufferVector::new(block.output_count(), self.buffer_size);
+
+        self.blocks.push(ProcessBlockAtSynth{ block: block, inputs: inputs, outputs: outputs});
+        BlockId(n)
     }
 
     pub fn output(&mut self, output: BlockId){
@@ -73,19 +69,15 @@ impl Synth{
     }
 
     pub fn work(&mut self){
-        let workorder = self.calculate_work_order();
+        let mut workorder = self.calculate_work_order();
         println!("Workorder is {:?}", workorder);
-        let buffer_size = 10;
 
-        let mut audiobuffers = Vec::new();
-        for _ in 0..self.connections.len() {
-            audiobuffers.push(AudioBuffer::new(buffer_size));
+        for pb in &mut workorder{
+            pb.work()
         }
-
-        println!("Audio buffers ready: {:?}", audiobuffers);
     }
-
-    fn calculate_work_order(&self) -> Vec<SynthWork>{
-        vec![]
+    fn calculate_work_order(&self) -> Vec<&mut ProcessBlockAtSynth>{
+        vec![
+        ]
     }
 }

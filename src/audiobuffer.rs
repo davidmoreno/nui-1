@@ -33,20 +33,10 @@ impl fmt::Debug for AudioBuffer{
 pub struct AudioBufferIterator<'a>{
     iter: slice::Iter<'a, f32>
 }
-pub struct AudioBufferIteratorMut<'a>{
-    iter: slice::IterMut<'a, f32>
-}
-
 
 impl<'a> Iterator for AudioBufferIterator<'a>{
     type Item = f32;
     fn next(&mut self) -> Option<f32> {
-        self.next()
-    }
-}
-impl<'a> Iterator for AudioBufferIteratorMut<'a>{
-    type Item = &'a mut f32;
-    fn next(&mut self) -> Option<&'a mut f32> {
         self.next()
     }
 }
@@ -56,12 +46,7 @@ pub struct ReadBufferVector{
     vector: Vec<Rc<RefCell<AudioBuffer>>>
 }
 
-#[derive(Debug)]
-pub struct WriteBufferVector{
-    vector: Vec<Rc<RefCell<AudioBuffer>>>
-}
-
-struct AudioBufferRefWrapper<'a>{
+pub struct AudioBufferRefWrapper<'a>{
     audiobuffer: cell::Ref<'a, AudioBuffer>
 }
 
@@ -79,9 +64,35 @@ impl ReadBufferVector{
 
         AudioBufferRefWrapper{ audiobuffer: audiobuffer }
     }
+    pub fn set(&mut self, port: port::Port, audiobuffer: Rc<RefCell<AudioBuffer>>){
+        self.vector[port.nr] = audiobuffer
+    }
+    pub fn new(count: usize, size: usize) -> ReadBufferVector{
+        let mut vector = Vec::new();
+        for i in 0..count{
+            vector.push(Rc::new(RefCell::new(AudioBuffer::new(size))));
+        }
+        ReadBufferVector{ vector: vector }
+    }
 }
 
-struct AudioBufferRefMutWrapper<'a>{
+pub struct AudioBufferIteratorMut<'a>{
+    iter: slice::IterMut<'a, f32>
+}
+
+impl<'a> Iterator for AudioBufferIteratorMut<'a>{
+    type Item = &'a mut f32;
+    fn next(&mut self) -> Option<&'a mut f32> {
+        self.next()
+    }
+}
+
+#[derive(Debug)]
+pub struct WriteBufferVector{
+    vector: Vec<Rc<RefCell<AudioBuffer>>>
+}
+
+pub struct AudioBufferRefMutWrapper<'a>{
     audiobuffer: cell::RefMut<'a, AudioBuffer>
 }
 
@@ -97,5 +108,17 @@ impl WriteBufferVector{
         let idx = port.nr;
         let audiobuffer = self.vector[idx].borrow_mut();
         AudioBufferRefMutWrapper{  audiobuffer: audiobuffer }
+    }
+    pub fn get_rc(&self, port: port::Port) -> &Rc<RefCell<AudioBuffer>>{
+        let audiobuffer = self.vector.get(port.nr).unwrap();
+        audiobuffer
+    }
+    pub fn new(count: usize, size: usize) -> WriteBufferVector{
+        let mut vector = Vec::new();
+        for i in 0..count{
+            vector.push(Rc::new(RefCell::new(AudioBuffer::new(size))));
+        }
+
+        WriteBufferVector{ vector: vector }
     }
 }

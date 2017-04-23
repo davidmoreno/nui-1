@@ -13,9 +13,6 @@ pub const FREQ:Port = Port{nr:0};
 pub const NOTE_ON:Port = Port{nr:1};
 pub const OUT:Port = Port{nr:0};
 
-pub const INPUT_COUNT:usize = 2;
-pub const OUTPUT_COUNT:usize = 1;
-
 impl SinOsc{
     pub fn new() -> Box<SinOsc>{
         Box::new(SinOsc{
@@ -34,4 +31,6 @@ impl ProcessBlock for SinOsc {
             *o = 0.0;
         }
     }
+    fn input_count(&self) -> usize { 2 }
+    fn output_count(&self) -> usize { 1 }
 }

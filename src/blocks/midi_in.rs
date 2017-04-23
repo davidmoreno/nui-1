@@ -19,9 +19,6 @@ pub const C5:Port = Port{nr:6};
 pub const C6:Port = Port{nr:7};
 pub const C7:Port = Port{nr:8};
 
-pub const INPUT_COUNT:usize = 0;
-pub const OUTPUT_COUNT:usize = 130;
-
 impl MidiIn{
     pub fn new() -> Box<MidiIn>{
         Box::new(MidiIn{})
@@ -36,4 +33,6 @@ impl ProcessBlock for MidiIn{
             *o = 440.0;
         }
     }
+    fn input_count(&self) -> usize { 0 }
+    fn output_count(&self) -> usize { 130 }
 }

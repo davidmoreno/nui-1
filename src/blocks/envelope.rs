@@ -26,4 +26,6 @@ impl ProcessBlock for Envelope{
     }
     fn process(&mut self, input: &ReadBufferVector, output: &WriteBufferVector){
     }
+    fn input_count(&self) -> usize { 5 }
+    fn output_count(&self) -> usize { 1 }
 }
