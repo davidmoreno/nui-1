@@ -1,7 +1,7 @@
 use std::fmt;
 use std::cell::RefCell;
 use std::cell;
-use std::ops;
+use std::ops::Deref;
 use std::slice;
 use std::rc::Rc;
 use std::ops::Index;
@@ -35,9 +35,9 @@ pub struct AudioBufferIterator<'a>{
 }
 
 impl<'a> Iterator for AudioBufferIterator<'a>{
-    type Item = f32;
-    fn next(&mut self) -> Option<f32> {
-        self.next()
+    type Item = &'a f32;
+    fn next(&mut self) -> Option<&'a f32> {
+        self.iter.next()
     }
 }
 
@@ -53,7 +53,7 @@ pub struct AudioBufferRefWrapper<'a>{
 impl<'a> Iterator for AudioBufferRefWrapper<'a>{
     type Item = &'a f32;
     fn next(&mut self) -> Option<&'a f32> {
-        self.next()
+        self.audiobuffer.deref().next()
     }
 }
 

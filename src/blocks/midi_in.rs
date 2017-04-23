@@ -33,6 +33,7 @@ impl ProcessBlock for MidiIn{
             *o = 440.0;
         }
     }
+    fn typename(&self) -> &str{ "MidiIn" }
     fn input_count(&self) -> usize { 0 }
     fn output_count(&self) -> usize { 130 }
 }

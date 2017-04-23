@@ -31,6 +31,7 @@ impl ProcessBlock for SinOsc {
             *o = 0.0;
         }
     }
+    fn typename(&self) -> &str{ "SinOsc" }
     fn input_count(&self) -> usize { 2 }
     fn output_count(&self) -> usize { 1 }
 }

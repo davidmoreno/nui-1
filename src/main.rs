@@ -10,6 +10,7 @@ use synth::Synth;
 use blocks::sinosc;
 use blocks::midi_in;
 use blocks::envelope;
+use blocks::multiply;
 
 fn main() {
     let mut synth = Synth::new();
@@ -18,9 +19,19 @@ fn main() {
     let osc1 = synth.add( sinosc::SinOsc::new() );
     let midi_in = synth.add( midi_in::MidiIn::new() );
     let envelope = synth.add( envelope::Envelope::new() );
+    let mul = synth.add( multiply::Multiply::new() );
 
     synth.connect(midi_in, midi_in::FREQ, osc1, sinosc::FREQ);
+    synth.connect(midi_in, midi_in::C1, envelope, envelope::ATTACK);
+    synth.connect(midi_in, midi_in::C2, envelope, envelope::RELEASE);
+    synth.connect(midi_in, midi_in::C3, envelope, envelope::SUSTAIN);
+    synth.connect(midi_in, midi_in::C4, envelope, envelope::SUSTAIN_LEVEL);
+    synth.connect(midi_in, midi_in::C5, envelope, envelope::DECAY);
 
+    synth.connect(envelope, envelope::OUT, mul, multiply::A);
+    synth.connect(osc1, sinosc::OUT, mul, multiply::B);
+
+    synth.output(mul, multiply::OUT);
 
     /*
     let osc2 = TriOsc::new();
@@ -58,8 +69,7 @@ fn main() {
     midi_in.setControllerValue(MidiIn::C6, 1.0);
     midi_in.setControllerValue(MidiIn::C7, 0.85);
     */
-    synth.output(osc1);
-    println!("{:?}", synth);
+    //println!("{:?}", synth);
 
     synth.work();
 }

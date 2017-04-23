@@ -27,6 +27,7 @@ impl ProcessBlock for Fixed{
             *o = self.value;
         }
     }
+    fn typename(&self) -> &str{ "Fixed" }
     fn input_count(&self) -> usize { 0 }
     fn output_count(&self) -> usize { 1 }
 }

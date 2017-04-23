@@ -10,7 +10,7 @@ pub struct Envelope{
 pub const ATTACK:Port = Port{nr:0};
 pub const DECAY:Port = Port{nr:1};
 pub const SUSTAIN:Port = Port{nr:2};
-pub const SUSTAIN_T:Port = Port{nr:3};
+pub const SUSTAIN_LEVEL:Port = Port{nr:3};
 pub const RELEASE:Port = Port{nr:4};
 
 pub const OUT:Port = Port{nr:0};
@@ -26,6 +26,7 @@ impl ProcessBlock for Envelope{
     }
     fn process(&mut self, input: &ReadBufferVector, output: &WriteBufferVector){
     }
+    fn typename(&self) -> &str{ "Envelope" }
     fn input_count(&self) -> usize { 5 }
     fn output_count(&self) -> usize { 1 }
 }

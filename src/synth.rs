@@ -1,8 +1,6 @@
 use audiobuffer::*;
 use processblock::ProcessBlock;
 use port::Port;
-use std::fmt;
-use std::cell::RefCell;
 
 #[derive(Debug, Clone, Copy)]
 pub struct BlockId(usize);
@@ -23,7 +21,7 @@ impl ProcessBlockAtSynth{
 #[derive(Debug)]
 pub struct Synth{
     blocks: Vec<ProcessBlockAtSynth>,
-    output: BlockId,
+    output: (BlockId, Port),
     buffer_size: usize
 }
 
@@ -39,7 +37,7 @@ impl Synth{
     pub fn new() -> Synth{
         Synth{
             blocks: Vec::new(),
-            output: BlockId(127),
+            output: (BlockId(127), Port{nr:0}),
             buffer_size: 128,
         }
     }
@@ -64,20 +62,20 @@ impl Synth{
         BlockId(n)
     }
 
-    pub fn output(&mut self, output: BlockId){
-        self.output=output;
+    pub fn output(&mut self, output: BlockId, port: Port){
+        self.output=(output, port);
     }
 
     pub fn work(&mut self){
         let mut workorder = self.calculate_work_order();
-        println!("Workorder is {:?}", workorder);
+        //println!("Workorder is {:?}", workorder);
 
-        for pb in &mut workorder{
-            pb.work()
+        for pb in workorder{
+            println!("{:#?}", self.blocks[pb].block);
+            self.blocks[pb].work();
         }
     }
-    fn calculate_work_order(&self) -> Vec<&mut ProcessBlockAtSynth>{
-        vec![
-        ]
+    fn calculate_work_order(&mut self) -> Vec<usize>{
+        vec![1,0,2,3]
     }
 }
