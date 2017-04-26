@@ -1,6 +1,7 @@
 use audiobuffer::*;
 use processblock::ProcessBlock;
 use port::Port;
+use ansi_term::Colour;
 
 #[derive(Debug, Clone, Copy)]
 pub struct BlockId(usize);
@@ -38,7 +39,7 @@ impl Synth{
         Synth{
             blocks: Vec::new(),
             output: (BlockId(127), Port{nr:0}),
-            buffer_size: 128,
+            buffer_size: 16,
         }
     }
     pub fn connect(&mut self, block_out: BlockId, port_out: Port, block_in: BlockId, port_in: Port) -> &mut Self {
@@ -71,9 +72,13 @@ impl Synth{
         //println!("Workorder is {:?}", workorder);
 
         for pb in workorder{
-            println!("{:#?}", self.blocks[pb].block);
+            println!("{}", Colour::Green.paint(format!("## {:?}", self.blocks[pb].block)));
             self.blocks[pb].work();
         }
+        let out_block = (self.output.0).0;
+        let out_port = self.output.1;
+        let output = &self.blocks[out_block].outputs.get(out_port);
+        println!("{}", Colour::Blue.paint(format!("{:?}", output)));
     }
     fn calculate_work_order(&mut self) -> Vec<usize>{
         vec![1,0,2,3]

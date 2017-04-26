@@ -22,6 +22,10 @@ impl ProcessBlock for Multiply{
     fn setup(&mut self, config: &SynthConfig){
     }
     fn process(&mut self, input: &ReadBufferVector, output: &WriteBufferVector){
+        for (o, a, b) in izip!(output.get(OUT), input.get(A), input.get(B)){
+            *o = a * b;
+        }
+
     }
     fn typename(&self) -> &str{ "Multiply" }
     fn input_count(&self) -> usize { 2 }

@@ -1,10 +1,12 @@
 #[macro_use] extern crate itertools;
+extern crate ansi_term;
 
 mod audiobuffer;
 mod processblock;
 mod synth;
 mod blocks;
 mod port;
+
 
 use synth::Synth;
 use blocks::sinosc;

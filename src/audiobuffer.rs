@@ -53,7 +53,7 @@ pub struct AudioBufferRefWrapper<'a>{
 impl<'a> Iterator for AudioBufferRefWrapper<'a>{
     type Item = &'a f32;
     fn next(&mut self) -> Option<&'a f32> {
-        self.audiobuffer.deref().next()
+        None
     }
 }
 
@@ -83,7 +83,7 @@ pub struct AudioBufferIteratorMut<'a>{
 impl<'a> Iterator for AudioBufferIteratorMut<'a>{
     type Item = &'a mut f32;
     fn next(&mut self) -> Option<&'a mut f32> {
-        self.next()
+        self.iter.next()
     }
 }
 
@@ -92,6 +92,7 @@ pub struct WriteBufferVector{
     vector: Vec<Rc<RefCell<AudioBuffer>>>
 }
 
+#[derive(Debug)]
 pub struct AudioBufferRefMutWrapper<'a>{
     audiobuffer: cell::RefMut<'a, AudioBuffer>
 }
@@ -99,7 +100,8 @@ pub struct AudioBufferRefMutWrapper<'a>{
 impl<'a> Iterator for AudioBufferRefMutWrapper<'a>{
     type Item = &'a mut f32;
     fn next(&mut self) -> Option<&'a mut f32>{
-        self.next()
+        println!("Get mut audio sample");
+        None
     }
 }
 
