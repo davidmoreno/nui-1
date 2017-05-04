@@ -24,7 +24,7 @@ impl Envelope{
 impl ProcessBlock for Envelope{
     fn setup(&mut self, config: &SynthConfig){
     }
-    fn process(&mut self, input: &ReadBufferVector, output: &WriteBufferVector){
+    fn process(&mut self, input: &AudioBufferVector, output: &AudioBufferVector){
     }
     fn typename(&self) -> &str{ "Envelope" }
     fn input_count(&self) -> usize { 5 }

@@ -9,8 +9,8 @@ pub struct BlockId(usize);
 #[derive(Debug)]
 struct ProcessBlockAtSynth{
     block: Box<ProcessBlock>,
-    inputs: ReadBufferVector,
-    outputs: WriteBufferVector,
+    inputs: AudioBufferVector,
+    outputs: AudioBufferVector,
 }
 
 impl ProcessBlockAtSynth{
@@ -43,21 +43,23 @@ impl Synth{
         }
     }
     pub fn connect(&mut self, block_out: BlockId, port_out: Port, block_in: BlockId, port_in: Port) -> &mut Self {
+        /*
         let audioblock = {
             let real_block_out = &self.blocks[block_out.0];
-            real_block_out.outputs.get_rc(port_out).clone()
+            real_block_out.outputs.get(port_out)
         };
         {
             let real_block_in = &mut self.blocks[block_in.0];
             real_block_in.inputs.set(port_in, audioblock);
         }
+        */
         self
     }
 
     pub fn add(&mut self, block: Box<ProcessBlock>) -> BlockId{
         let n = self.blocks.len();
-        let inputs=ReadBufferVector::new(block.input_count(), self.buffer_size);
-        let outputs=WriteBufferVector::new(block.output_count(), self.buffer_size);
+        let inputs=AudioBufferVector::new(block.input_count(), self.buffer_size);
+        let outputs=AudioBufferVector::new(block.output_count(), self.buffer_size);
 
         self.blocks.push(ProcessBlockAtSynth{ block: block, inputs: inputs, outputs: outputs});
         BlockId(n)

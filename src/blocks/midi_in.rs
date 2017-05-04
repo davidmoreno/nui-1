@@ -28,10 +28,10 @@ impl MidiIn{
 impl ProcessBlock for MidiIn{
     fn setup(&mut self, config: &SynthConfig){
     }
-    fn process(&mut self, input: &ReadBufferVector, output: &WriteBufferVector){
-        for o in output.get(OUT){
-            *o = 440.0;
-        }
+    fn process(&mut self, input: &AudioBufferVector, output: &AudioBufferVector){
+        // for o in output.get(OUT){
+        //     *o = 440.0;
+        // }
     }
     fn typename(&self) -> &str{ "MidiIn" }
     fn input_count(&self) -> usize { 0 }

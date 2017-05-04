@@ -22,10 +22,10 @@ impl Fixed{
 impl ProcessBlock for Fixed{
     fn setup(&mut self, config: &SynthConfig){
     }
-    fn process(&mut self, input: &ReadBufferVector, output: &WriteBufferVector){
-        for o in output.get(OUT){
-            *o = self.value;
-        }
+    fn process(&mut self, input: &AudioBufferVector, output: &AudioBufferVector){
+        // for o in output.get(OUT){
+        //     *o = self.value;
+        // }
     }
     fn typename(&self) -> &str{ "Fixed" }
     fn input_count(&self) -> usize { 0 }

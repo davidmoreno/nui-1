@@ -26,10 +26,12 @@ impl ProcessBlock for SinOsc {
     fn setup(&mut self, config: &SynthConfig){
         self.sample_rate = config.sample_rate
     }
-    fn process(&mut self, input: &ReadBufferVector, output: &WriteBufferVector){
+    fn process(&mut self, input: &AudioBufferVector, output: &AudioBufferVector){
+        /*
         for (o, f, n) in izip!(output.get(OUT), input.get(FREQ), input.get(NOTE_ON)){
             *o = 0.0;
         }
+        */
     }
     fn typename(&self) -> &str{ "SinOsc" }
     fn input_count(&self) -> usize { 2 }
