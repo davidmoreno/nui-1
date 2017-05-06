@@ -1,14 +1,6 @@
 use std::fmt;
-use std::cell::RefCell;
-use std::cell::RefMut;
-use std::cell::Ref;
-use std::rc::Rc;
 use port;
 use std::iter::IntoIterator;
-use std::clone::Clone;
-use std::vec;
-use std::slice;
-use std::iter::Zip;
 
 pub struct AudioBuffer{
     data: Box<Vec<f32>>
@@ -52,6 +44,15 @@ impl fmt::Debug for AudioBuffer{
     }
 }
 
+impl fmt::Display for AudioBuffer{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for s in self.into_iter(){
+            write!(f, "{} ", s);
+        }
+        write!(f, "")
+    }
+}
+
 
 #[derive(Debug)]
 pub struct AudioBufferVector{
@@ -59,17 +60,15 @@ pub struct AudioBufferVector{
 }
 
 impl AudioBufferVector{
-    pub fn get(&mut self, port: port::Port) -> AudioBuffer{
-        let idx = port.nr;
-
+    pub fn get(&mut self, idx: usize) -> AudioBuffer{
         self.vector.get_mut(idx).unwrap().take().unwrap()
     }
     // pub fn get_mut(&self, port: port::Port) -> RWAudioBuffer{
     //     let idx = port.nr;
     //     RWAudioBuffer{ audiobuffer: self.vector[idx] }
     // }
-    pub fn put(&mut self, port: port::Port, audiobuffer: AudioBuffer){
-        self.vector[port.nr] = Some(audiobuffer)
+    pub fn put(&mut self, idx: usize, audiobuffer: AudioBuffer){
+        self.vector[idx] = Some(audiobuffer)
     }
     pub fn new(count: usize, size: usize) -> AudioBufferVector{
         let mut vector = Vec::new();
@@ -77,6 +76,21 @@ impl AudioBufferVector{
             vector.push(Some(AudioBuffer::new(size)));
         }
         AudioBufferVector{ vector: vector }
+    }
+    pub fn new_empty(count: usize) -> AudioBufferVector{
+        let mut vector = Vec::new();
+        for _i in 0..count{
+            vector.push(None);
+        }
+        AudioBufferVector{ vector: vector }
+    }
+    pub fn check_all_some(&self) -> bool{
+        for ab in &self.vector{
+            if !ab.is_some() {
+                return false;
+            }
+        }
+        true
     }
 }
 

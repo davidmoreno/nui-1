@@ -8,7 +8,7 @@ pub struct SynthConfig{
 
 pub trait ProcessBlock : fmt::Debug{
     fn setup(&mut self, &SynthConfig);
-    fn process(&mut self, input: &AudioBufferVector, output: &AudioBufferVector);
+    fn process(&mut self, input: &mut AudioBufferVector, output: &mut AudioBufferVector);
 
     fn typename(&self) -> &str;
     fn input_count(&self) -> usize;

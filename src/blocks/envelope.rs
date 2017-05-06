@@ -2,6 +2,7 @@ use audiobuffer::*;
 use port::Port;
 use processblock::ProcessBlock;
 use processblock::SynthConfig;
+use itertools::zip;
 
 #[derive(Debug)]
 pub struct Envelope{
@@ -24,7 +25,14 @@ impl Envelope{
 impl ProcessBlock for Envelope{
     fn setup(&mut self, config: &SynthConfig){
     }
-    fn process(&mut self, input: &AudioBufferVector, output: &AudioBufferVector){
+    fn process(&mut self, inputs: &mut AudioBufferVector, outputs: &mut AudioBufferVector){
+        let mut out = outputs.get(0);
+        let note = inputs.get(0);
+        for (o,n) in zip(&mut out, &note){
+            *o=if *n>0.0 { 1.0 } else { 0.0 }
+        }
+        outputs.put(0, out);
+        inputs.put(0, note);
     }
     fn typename(&self) -> &str{ "Envelope" }
     fn input_count(&self) -> usize { 5 }

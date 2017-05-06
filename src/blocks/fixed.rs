@@ -22,7 +22,7 @@ impl Fixed{
 impl ProcessBlock for Fixed{
     fn setup(&mut self, config: &SynthConfig){
     }
-    fn process(&mut self, input: &AudioBufferVector, output: &AudioBufferVector){
+    fn process(&mut self, input: &mut AudioBufferVector, output: &mut AudioBufferVector){
         // for o in output.get(OUT){
         //     *o = self.value;
         // }

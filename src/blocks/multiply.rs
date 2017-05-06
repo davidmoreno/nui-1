@@ -21,7 +21,7 @@ impl Multiply{
 impl ProcessBlock for Multiply{
     fn setup(&mut self, config: &SynthConfig){
     }
-    fn process(&mut self, input: &AudioBufferVector, output: &AudioBufferVector){
+    fn process(&mut self, input: &mut AudioBufferVector, output: &mut AudioBufferVector){
         // for (o, a, b) in izip!(output.get(OUT), input.get(A), input.get(B)){
         //     *o = a * b;
         // }
