@@ -2,9 +2,13 @@ use audiobuffer::*;
 use port::Port;
 use processblock::ProcessBlock;
 use processblock::SynthConfig;
+use ::midi_event::MidiEvent;
 
 #[derive(Debug)]
 pub struct MIDI{
+    freq: f32,
+    velocity: f32,
+    last_note: u8,
 }
 
 pub const FREQ:Port = Port{nr:0};
@@ -20,7 +24,30 @@ pub const C7:Port = Port{nr:8};
 
 impl MIDI{
     pub fn new() -> Box<MIDI>{
-        Box::new(MIDI{})
+        Box::new(MIDI{
+            freq: 1.0,
+            velocity: 0.0,
+            last_note: 0
+        })
+    }
+    pub fn event(&mut self, event: ::midi_event::MidiEvent ){
+        println!("MIDI Event: {:?}", event);
+        match event {
+            MidiEvent::NoteOn{ note, velocity, channel: _, timestamp: _ } => {
+                self.freq=note_to_freq(note as f32);
+                self.velocity=velocity as f32/127.0;
+                self.last_note=note
+            }
+            MidiEvent::NoteOff{ note, velocity: _, channel: _, timestamp: _ } => {
+                if note == self.last_note{
+                    self.velocity=0.0;
+                    self.freq=0.0;
+                }
+            }
+            _ => {
+                // Nothing
+            }
+        }
     }
 }
 
@@ -31,10 +58,10 @@ impl ProcessBlock for MIDI{
         let mut freq = output.get(0);
         let mut note_on = output.get(1);
         for o in &mut freq{
-            *o = note_to_freq(63.0);
+            *o = self.freq;
         }
         for o in &mut note_on{
-            *o = 1.0;
+            *o = self.velocity;
         }
         output.put(0, freq);
         output.put(1, note_on);
@@ -42,6 +69,8 @@ impl ProcessBlock for MIDI{
     fn typename(&self) -> &str{ "MIDI" }
     fn input_count(&self) -> usize { 0 }
     fn output_count(&self) -> usize { 10 }
+
+    fn into_midi(&mut self) -> Option<&mut ::blocks::midi::MIDI> { Some(self) }
 }
 
 const BASE_A4:f32 =440.0;

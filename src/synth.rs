@@ -2,6 +2,7 @@ use audiobuffer::*;
 use processblock::ProcessBlock;
 use port::Port;
 use ansi_term::Colour;
+use midi_event::MidiEvent;
 
 #[derive(Debug, Clone, Copy)]
 pub struct BlockId(usize);
@@ -56,13 +57,15 @@ order.
 */
 impl Synth{
     pub fn new() -> Synth{
-        Synth{
+        let mut sn = Synth{
             blocks: Vec::new(),
             output: Connection{ buffer_id: 0, block: BlockId(127), port: Port{nr:0} },
             buffer_size: 128,
             output_port_count: 0,
             workdata: None
-        }
+        };
+        sn.add(::blocks::midi::MIDI::new());
+        sn
     }
     pub fn connect(&mut self, block_out: BlockId, port_out: Port, block_in: BlockId, port_in: Port) -> &mut Self {
         let buffer_id = self.get_output_port_number(block_out, port_out);
@@ -116,6 +119,9 @@ impl Synth{
             max = ::std::cmp::max( max, b.block.output_count() )
         }
         max
+    }
+    pub fn get_midi(&self) -> BlockId{
+        BlockId(0) // always the first block is the midi connector
     }
 
     pub fn pre_work(&mut self){
@@ -188,6 +194,13 @@ impl Synth{
     }
     pub fn post_work(&mut self){
         self.workdata=None;
+    }
+    pub fn send_midi(&mut self, event: MidiEvent){
+        use ::std::any::Any;
+
+        let genblock = &mut self.blocks[0].block;
+        let midi = &mut genblock.into_midi().unwrap();
+        midi.event(event)
     }
 
     fn calculate_work_order(&mut self) -> Vec<usize>{
