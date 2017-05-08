@@ -7,3 +7,4 @@ authors = ["David Moreno <dmoreno@coralbits.com>"]
 
 itertools = "0.6.0"
 ansi_term = "0.9"
+jack = "0.5.0"

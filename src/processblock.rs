@@ -6,7 +6,7 @@ pub struct SynthConfig{
     pub sample_rate: i32,
 }
 
-pub trait ProcessBlock : fmt::Debug{
+pub trait ProcessBlock : fmt::Debug + Send{
     fn setup(&mut self, &SynthConfig);
     fn process(&mut self, input: &mut AudioBufferVector, output: &mut AudioBufferVector);
 

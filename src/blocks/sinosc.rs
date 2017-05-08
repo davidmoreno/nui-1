@@ -32,7 +32,7 @@ impl ProcessBlock for SinOsc {
         let note_on = input.get(1);
         for (o, f, n) in izip!(&mut out, &freq, &note_on){
             if *n > 0.0 {
-                *o = f32::sin(self.phase);
+                *o = f32::sin(self.phase * 2.0 * ::std::f32::consts::PI);
                 self.phase+=f/self.sample_rate;
             }
             else {

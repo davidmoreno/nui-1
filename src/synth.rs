@@ -32,6 +32,18 @@ pub struct Synth{
     output: Connection,
     buffer_size: usize,
     output_port_count: usize,
+
+    // only between prework and postwork
+    workdata: Option<WorkData>
+}
+#[derive(Debug)]
+struct WorkData{
+    nframes: usize,
+    audiobuffers: AudioBufferVector,
+    inputs: AudioBufferVector,
+    outputs: AudioBufferVector,
+    workorder: Vec<usize>,
+    output: AudioBuffer,
 }
 
 
@@ -47,8 +59,9 @@ impl Synth{
         Synth{
             blocks: Vec::new(),
             output: Connection{ buffer_id: 0, block: BlockId(127), port: Port{nr:0} },
-            buffer_size: 16,
-            output_port_count: 0
+            buffer_size: 128,
+            output_port_count: 0,
+            workdata: None
         }
     }
     pub fn connect(&mut self, block_out: BlockId, port_out: Port, block_in: BlockId, port_in: Port) -> &mut Self {
@@ -105,59 +118,76 @@ impl Synth{
         max
     }
 
-    pub fn work(&mut self){
-        let workorder = self.calculate_work_order();
-        //println!("Workorder is {:?}", workorder);
-        let mut audiobuffers = AudioBufferVector::new(self.get_output_port_count(), self.buffer_size);
-        let mut inputs = AudioBufferVector::new_empty(self.get_max_input_ports());
-        let mut outputs = AudioBufferVector::new_empty(self.get_max_output_ports());
-        let mut n = 0;
-
-        loop {
-            for (block_id, rpb) in (&workorder).into_iter().enumerate(){
-                let pb = *rpb;
-                // loan audio buffers from the main list of audiobuffers
-                {
-                    let cblock = &self.blocks[pb];
-                    let block = &cblock.block;
-                    //println!("{}", Colour::Green.paint(format!("## {:?} ({:?}) <({:?}) <({:?})", block, block_id, cblock.inputs, cblock.outputs)));
-                    for port_in in 0..block.input_count() {
-                        inputs.put(port_in, audiobuffers.get( self.get_input_port_number(BlockId(block_id), Port::new(port_in)) ));
-                    }
-                    // println!("Got i");
-                    for port_out in 0..block.output_count() {
-                        outputs.put(port_out, audiobuffers.get( self.get_output_port_number(BlockId(block_id), Port::new(port_out)) ));
-                    }
-                    // println!("Got io");
+    pub fn pre_work(&mut self){
+        let workdata = WorkData{
+            workorder: self.calculate_work_order(),
+            //println!("Workorder is {:?}", workorder);
+            audiobuffers: AudioBufferVector::new(self.get_output_port_count(), self.buffer_size),
+            inputs: AudioBufferVector::new_empty(self.get_max_input_ports()),
+            outputs: AudioBufferVector::new_empty(self.get_max_output_ports()),
+            nframes: 0,
+            output: AudioBuffer::new(self.buffer_size)
+        };
+        self.workdata = Some(workdata);
+    }
+    pub fn work(&mut self) -> &AudioBuffer{
+        let mut workdata_option = self.workdata.take();
+        {
+        let mut workdata = &mut workdata_option.as_mut().unwrap();
+        let mut audiobuffers = &mut workdata.audiobuffers;
+        let mut inputs = &mut workdata.inputs;
+        let mut outputs = &mut workdata.outputs;
+        for (block_id, rpb) in (&workdata.workorder).into_iter().enumerate(){
+            let pb = *rpb;
+            // loan audio buffers from the main list of audiobuffers
+            {
+                let cblock = &self.blocks[pb];
+                let block = &cblock.block;
+                //println!("{}", Colour::Green.paint(format!("## {:?} ({:?}) <({:?}) <({:?})", block, block_id, cblock.inputs, cblock.outputs)));
+                for port_in in 0..block.input_count() {
+                    inputs.put(port_in, audiobuffers.get( self.get_input_port_number(BlockId(block_id), Port::new(port_in)) ));
                 }
-                // process
-                self.blocks[pb].block.process(&mut inputs, &mut outputs);
-                // return the buffers
-                {
-                    let block = &self.blocks[pb].block;
-                    // println!("Put io");
-                    for port_in in 0..block.input_count() {
-                        audiobuffers.put(self.get_input_port_number(BlockId(block_id), Port::new(port_in)), inputs.get(port_in) );
-                    }
-                    for port_out in 0..block.output_count() {
-                        audiobuffers.put(self.get_output_port_number(BlockId(block_id), Port::new(port_out)), outputs.get(port_out) );
-                    }
-                    audiobuffers.check_all_some();
-                    // println!("Done all ok");
+                // println!("Got i");
+                for port_out in 0..block.output_count() {
+                    outputs.put(port_out, audiobuffers.get( self.get_output_port_number(BlockId(block_id), Port::new(port_out)) ));
                 }
+                // println!("Got io");
             }
-            let out_block = (self.output.block).0;
-            let out_port = self.output.port;
-
-            let outputp = self.blocks[out_block].outputs[out_port.nr];
-            let output = audiobuffers.get(outputp);
-            println!("{}: {}", n, Colour::Blue.paint(format!("{}", output)));
-            audiobuffers.put(outputp, output);
-            n+=1;
-            if n > 64 {
-                break;
+            // process
+            self.blocks[pb].block.process(&mut inputs, &mut outputs);
+            // return the buffers
+            {
+                let block = &self.blocks[pb].block;
+                // println!("Put io");
+                for port_in in 0..block.input_count() {
+                    audiobuffers.put(self.get_input_port_number(BlockId(block_id), Port::new(port_in)), inputs.get(port_in) );
+                }
+                for port_out in 0..block.output_count() {
+                    audiobuffers.put(self.get_output_port_number(BlockId(block_id), Port::new(port_out)), outputs.get(port_out) );
+                }
+                audiobuffers.check_all_some();
+                // println!("Done all ok");
             }
         }
+        let out_block = (self.output.block).0;
+        let out_port = self.output.port;
+
+        let outputp = self.blocks[out_block].outputs[out_port.nr];
+        let output = audiobuffers.get(outputp);
+        //println!("{}: {}", workdata.nframes, Colour::Blue.paint(format!("{}", output)));
+
+        for (o, i) in ::itertools::zip(&mut workdata.output, &output){
+            *o=*i
+        }
+
+        audiobuffers.put(outputp, output);
+        workdata.nframes+=1;
+        }
+        self.workdata=workdata_option;
+        &self.workdata.as_ref().unwrap().output
+    }
+    pub fn post_work(&mut self){
+        self.workdata=None;
     }
 
     fn calculate_work_order(&mut self) -> Vec<usize>{
@@ -184,5 +214,15 @@ impl Synth{
                     Some(x) => *x
                 }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+
+    #[test]
+    fn synth_to_stdout(){
+
     }
 }

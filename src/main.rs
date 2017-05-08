@@ -1,5 +1,6 @@
 #[macro_use] extern crate itertools;
 extern crate ansi_term;
+extern crate jack;
 
 mod audiobuffer;
 mod processblock;
@@ -13,6 +14,9 @@ use blocks::sinosc;
 use blocks::midi;
 use blocks::envelope;
 use blocks::multiply;
+use jack::prelude::{AudioOutPort, AudioOutSpec, Client, JackControl, ClosureProcessHandler,
+                    ProcessScope, AsyncClient, client_options};
+use std::sync::{Arc, Mutex};
 
 fn main() {
     let mut synth = Synth::new();
@@ -75,5 +79,36 @@ fn main() {
     */
     //println!("{:?}", synth);
 
-    synth.work();
+    let (client, _status) = Client::new("nui-1", client_options::NO_START_SERVER).unwrap();
+    let mut out_port = client.register_port("output", AudioOutSpec::default()).unwrap();
+
+
+    synth.pre_work();
+
+    let synth = Arc::new(Mutex::new(synth));
+
+    let tsynth = synth.clone();
+    let process = ClosureProcessHandler::new(move |_: &Client, ps: &ProcessScope| -> JackControl {
+        // Get output buffer
+
+        let mut out_p = AudioOutPort::new(&mut out_port, ps);
+        let out: &mut [f32] = &mut out_p;
+
+        let mut synth = tsynth.lock().unwrap();
+        // Write output
+        for (o, i) in ::itertools::zip(out.iter_mut(), synth.work()){
+            *o = *i;
+        }
+
+        // Continue as normal
+        JackControl::Continue
+    });
+
+    let active_client = AsyncClient::new(client, (), process).unwrap();
+
+    loop {
+        ::std::thread::sleep( ::std::time::Duration::new(100, 0) )
+    }
+
+    synth.lock().unwrap().post_work();
 }

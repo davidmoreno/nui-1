@@ -31,7 +31,7 @@ impl ProcessBlock for MIDI{
         let mut freq = output.get(0);
         let mut note_on = output.get(1);
         for o in &mut freq{
-            *o = 440.0;
+            *o = note_to_freq(63.0);
         }
         for o in &mut note_on{
             *o = 1.0;
@@ -42,4 +42,10 @@ impl ProcessBlock for MIDI{
     fn typename(&self) -> &str{ "MIDI" }
     fn input_count(&self) -> usize { 0 }
     fn output_count(&self) -> usize { 10 }
+}
+
+const BASE_A4:f32 =440.0;
+
+pub fn note_to_freq(note: f32) -> f32{
+    BASE_A4*f32::powf(2.0, ((note as f32)-57.0)/12.0)
 }
