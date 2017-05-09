@@ -7,7 +7,7 @@ pub struct SynthConfig{
 }
 
 pub trait ProcessBlock : fmt::Debug + Send{
-    fn setup(&mut self, &SynthConfig);
+    fn setup(&mut self, &SynthConfig) { () }
     fn process(&mut self, input: &mut AudioBufferVector, output: &mut AudioBufferVector);
 
     fn into_midi(&mut self) -> Option<&mut ::blocks::midi::MIDI> { None }

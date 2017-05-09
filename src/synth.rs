@@ -1,7 +1,6 @@
 use audiobuffer::*;
 use processblock::ProcessBlock;
 use port::Port;
-use ansi_term::Colour;
 use midi_event::MidiEvent;
 
 #[derive(Debug, Clone, Copy)]
@@ -196,8 +195,6 @@ impl Synth{
         self.workdata=None;
     }
     pub fn send_midi(&mut self, event: MidiEvent){
-        use ::std::any::Any;
-
         let genblock = &mut self.blocks[0].block;
         let midi = &mut genblock.into_midi().unwrap();
         midi.event(event)

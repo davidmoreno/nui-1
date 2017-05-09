@@ -9,6 +9,7 @@ pub struct MIDI{
     freq: f32,
     velocity: f32,
     last_note: u8,
+    cc: Vec<f32>,
 }
 
 pub const FREQ:Port = Port{nr:0};
@@ -22,16 +23,18 @@ pub const C5:Port = Port{nr:6};
 pub const C6:Port = Port{nr:7};
 pub const C7:Port = Port{nr:8};
 
+const MAX_CC:u8 = 8;
+
 impl MIDI{
     pub fn new() -> Box<MIDI>{
         Box::new(MIDI{
             freq: 1.0,
             velocity: 0.0,
-            last_note: 0
+            last_note: 0,
+            cc: vec![0.0; 128]
         })
     }
     pub fn event(&mut self, event: ::midi_event::MidiEvent ){
-        println!("MIDI Event: {:?}", event);
         match event {
             MidiEvent::NoteOn{ note, velocity, channel: _, timestamp: _ } => {
                 self.freq=note_to_freq(note as f32);
@@ -44,17 +47,21 @@ impl MIDI{
                     self.freq=0.0;
                 }
             }
+            MidiEvent::ControllerChange{ value, controller, channel: _, timestamp: _ } => {
+                self.cc[controller as usize]=value as f32/127.0;
+            }
             _ => {
-                // Nothing
+                println!("MIDI Event: {:?}", event);
             }
         }
+    }
+    pub fn cc_value(&mut self, cc: u8, value: f32){
+        self.cc[cc as usize]=value;
     }
 }
 
 impl ProcessBlock for MIDI{
-    fn setup(&mut self, config: &SynthConfig){
-    }
-    fn process(&mut self, input: &mut AudioBufferVector, output: &mut AudioBufferVector){
+    fn process(&mut self, _input: &mut AudioBufferVector, output: &mut AudioBufferVector){
         let mut freq = output.get(0);
         let mut note_on = output.get(1);
         for o in &mut freq{
@@ -65,6 +72,17 @@ impl ProcessBlock for MIDI{
         }
         output.put(0, freq);
         output.put(1, note_on);
+        for i in 0..MAX_CC {
+            let port:usize = i as usize + 2;
+            let mut data = output.get(port);
+
+            let v = self.cc[i as usize];
+            for o in &mut data{
+                *o = v;
+            }
+
+            output.put(port, data);
+        }
     }
     fn typename(&self) -> &str{ "MIDI" }
     fn input_count(&self) -> usize { 0 }

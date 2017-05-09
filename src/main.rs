@@ -1,6 +1,6 @@
 #[macro_use] extern crate itertools;
-extern crate ansi_term;
 extern crate jack;
+extern crate colored;
 
 mod audiobuffer;
 mod processblock;
@@ -16,9 +16,9 @@ use blocks::midi;
 use blocks::envelope;
 use blocks::multiply;
 use jack::prelude::{AudioOutPort, AudioOutSpec, Client, JackControl, ClosureProcessHandler,
-                    ProcessScope, AsyncClient, client_options, MidiInSpec, MidiInPort, RawMidi};
+                    ProcessScope, AsyncClient, client_options, MidiInSpec, MidiInPort};
 use std::sync::{Arc, Mutex};
-use midi_event::MidiEvent;
+use midi_event::{ MidiEventFactory, MidiEvent };
 
 fn main() {
     let mut synth = Synth::new();
@@ -31,6 +31,7 @@ fn main() {
 
     synth.connect(midi, midi::FREQ, osc1, sinosc::FREQ);
     synth.connect(midi, midi::NOTE_ON, osc1, sinosc::NOTE_ON);
+    synth.connect(midi, midi::NOTE_ON, envelope, envelope::NOTE_ON);
     synth.connect(midi, midi::C1, envelope, envelope::ATTACK);
     synth.connect(midi, midi::C2, envelope, envelope::RELEASE);
     synth.connect(midi, midi::C3, envelope, envelope::SUSTAIN);
@@ -41,7 +42,7 @@ fn main() {
     synth.connect(osc1, sinosc::OUT, mul, multiply::B);
 
     //synth.output(mul, multiply::OUT);
-    synth.output(osc1, sinosc::OUT);
+    synth.output(mul, multiply::OUT);
 
     /*
     let osc2 = TriOsc::new();
@@ -87,7 +88,10 @@ fn main() {
 
     synth.pre_work();
 
+    synth.send_midi(MidiEvent::ControllerChange{ timestamp: 0, channel: 0, value: 64, controller: 0});
+
     let synth = Arc::new(Mutex::new(synth));
+    let midi_event_factory = MidiEventFactory::from_file("synth/ccmap.map");
 
     let tsynth = synth.clone();
     let process = ClosureProcessHandler::new(move |_: &Client, ps: &ProcessScope| -> JackControl {
@@ -95,7 +99,7 @@ fn main() {
         // Get output buffer
         let show_p = MidiInPort::new(&shower, ps);
         for e in show_p.iter() {
-            synth.send_midi(::to_internal_midi(e));
+            synth.send_midi( midi_event_factory.to_internal_midi(e) );
         }
 
         let mut out_p = AudioOutPort::new(&mut out_port, ps);
@@ -110,33 +114,11 @@ fn main() {
         JackControl::Continue
     });
 
-    let active_client = AsyncClient::new(client, (), process).unwrap();
+    let _active_client = AsyncClient::new(client, (), process).unwrap();
 
     loop {
         ::std::thread::sleep( ::std::time::Duration::new(100, 0) )
     }
 
     synth.lock().unwrap().post_work();
-}
-
-fn to_internal_midi(rm: RawMidi) -> MidiEvent{
-    if rm.bytes[0]==0x90 {
-        return MidiEvent::NoteOn{
-            timestamp: rm.time,
-            channel: rm.bytes[0]&0x0F,
-            note: rm.bytes[1],
-            velocity: rm.bytes[2]
-        }
-    }
-    else if rm.bytes[0]==0x80 {
-        return MidiEvent::NoteOff{
-            timestamp: rm.time,
-            channel: rm.bytes[0]&0x0F,
-            note: rm.bytes[1],
-            velocity: rm.bytes[2]
-        }
-    }
-    else {
-        return MidiEvent::None
-    }
 }

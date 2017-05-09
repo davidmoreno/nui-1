@@ -1,7 +1,6 @@
 use audiobuffer::*;
 use port::Port;
 use processblock::ProcessBlock;
-use processblock::SynthConfig;
 
 #[derive(Debug)]
 pub struct Multiply{
@@ -19,13 +18,17 @@ impl Multiply{
 }
 
 impl ProcessBlock for Multiply{
-    fn setup(&mut self, config: &SynthConfig){
-    }
-    fn process(&mut self, input: &mut AudioBufferVector, output: &mut AudioBufferVector){
-        // for (o, a, b) in izip!(output.get(OUT), input.get(A), input.get(B)){
-        //     *o = a * b;
-        // }
+    fn process(&mut self, inputs: &mut AudioBufferVector, outputs: &mut AudioBufferVector){
+        let mut output = outputs.get(OUT.nr);
+        let a = inputs.get(A.nr);
+        let b = inputs.get(B.nr);
+        for (o, a, b) in izip!(&mut output, &a, &b){
+             *o = a * b;
+        }
 
+        outputs.put(OUT.nr, output);
+        inputs.put(A.nr, a);
+        inputs.put(B.nr, b);
     }
     fn typename(&self) -> &str{ "Multiply" }
     fn input_count(&self) -> usize { 2 }

@@ -6,5 +6,5 @@ authors = ["David Moreno <dmoreno@coralbits.com>"]
 [dependencies]
 
 itertools = "0.6.0"
-ansi_term = "0.9"
+colored = "^1.5"
 jack = "0.5.0"
