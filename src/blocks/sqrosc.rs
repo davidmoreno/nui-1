@@ -34,7 +34,7 @@ impl ProcessBlock for SqrOsc {
         let sqr_width = input.get(2).unwrap();
         for (o, f, n, w) in izip!(&mut out, &freq, &note_on, &sqr_width){
             if *n > 0.0 {
-                *o = if self.phase>*w { 1.0 } else { -1.0 };
+                *o = if self.phase>*w { -1.0 } else { 1.0 };
                 self.phase+=f/self.sample_rate;
                 self.phase = self.phase % 1.0;
             }

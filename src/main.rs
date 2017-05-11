@@ -11,7 +11,7 @@ mod midi_event;
 
 
 use synth::Synth;
-use blocks::{sinosc, sqrosc, midi, envelope, multiply, mixer};
+use blocks::{sinosc, sqrosc, midi, envelope, multiply, mixer, moog_filter};
 use jack::prelude::{AudioOutPort, AudioOutSpec, Client, JackControl, ClosureProcessHandler,
                     ProcessScope, AsyncClient, client_options, MidiInSpec, MidiInPort};
 use std::sync::{Arc, Mutex};
@@ -75,6 +75,7 @@ fn build_synth(midi_event_factory: &MidiEventFactory) -> Synth{
     let mixer = synth.add( mixer::Mixer::new() );
     let envelope = synth.add( envelope::Envelope::new() );
     let mul = synth.add( multiply::Multiply::new() );
+    let moog = synth.add( moog_filter::MoogFilter::new() );
 
     synth.connect(midi, midi::FREQ, osc1, sinosc::FREQ);
     synth.connect(midi, midi::NOTE_ON, osc1, sinosc::NOTE_ON);
@@ -97,8 +98,12 @@ fn build_synth(midi_event_factory: &MidiEventFactory) -> Synth{
     synth.connect(envelope, envelope::OUT, mul, multiply::A);
     synth.connect(mixer, mixer::OUT, mul, multiply::B);
 
+    synth.connect(mul, multiply::OUT, moog, moog_filter::INPUT);
+    synth.connect(midi, midi_event_factory.get_cc("R7"), moog, moog_filter::CUTOFF);
+    synth.connect(midi, midi_event_factory.get_cc("R8"), moog, moog_filter::RESONANCE);
+
     //synth.output(mul, multiply::OUT);
-    synth.output(mul, multiply::OUT);
+    synth.output(moog, moog_filter::OUT);
     //synth.output(mixer, mixer::OUT);
 
     /*
