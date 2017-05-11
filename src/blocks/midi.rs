@@ -35,6 +35,7 @@ impl MIDI{
         })
     }
     pub fn event(&mut self, event: ::midi_event::MidiEvent ){
+        println!("MIDI Event: {:?}", event);
         match event {
             MidiEvent::NoteOn{ note, velocity, channel: _, timestamp: _ } => {
                 self.freq=note_to_freq(note as f32);
@@ -51,7 +52,6 @@ impl MIDI{
                 self.cc[controller as usize]=value as f32/127.0;
             }
             _ => {
-                println!("MIDI Event: {:?}", event);
             }
         }
     }

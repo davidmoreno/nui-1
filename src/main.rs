@@ -11,10 +11,7 @@ mod midi_event;
 
 
 use synth::Synth;
-use blocks::sinosc;
-use blocks::midi;
-use blocks::envelope;
-use blocks::multiply;
+use blocks::{sinosc, sqrosc, midi, envelope, multiply, mixer};
 use jack::prelude::{AudioOutPort, AudioOutSpec, Client, JackControl, ClosureProcessHandler,
                     ProcessScope, AsyncClient, client_options, MidiInSpec, MidiInPort};
 use std::sync::{Arc, Mutex};
@@ -74,11 +71,22 @@ fn build_synth(midi_event_factory: &MidiEventFactory) -> Synth{
 
     let midi = synth.get_midi();
     let osc1 = synth.add( sinosc::SinOsc::new() );
+    let osc2 = synth.add( sqrosc::SqrOsc::new() );
+    let mixer = synth.add( mixer::Mixer::new() );
     let envelope = synth.add( envelope::Envelope::new() );
     let mul = synth.add( multiply::Multiply::new() );
 
     synth.connect(midi, midi::FREQ, osc1, sinosc::FREQ);
     synth.connect(midi, midi::NOTE_ON, osc1, sinosc::NOTE_ON);
+
+    synth.connect(midi, midi::FREQ, osc2, sqrosc::FREQ);
+    synth.connect(midi, midi::NOTE_ON, osc2, sqrosc::NOTE_ON);
+    synth.connect(midi, midi_event_factory.get_cc("R6"), osc2, sqrosc::SQUARE_WIDTH);
+
+    synth.connect(osc1, sinosc::OUT, mixer, mixer::A);
+    synth.connect(osc2, sqrosc::OUT, mixer, mixer::B);
+    synth.connect(midi, midi_event_factory.get_cc("H"), mixer, mixer::A_B);
+
     synth.connect(midi, midi::NOTE_ON, envelope, envelope::NOTE_ON);
     synth.connect(midi, midi_event_factory.get_cc("R1"), envelope, envelope::ATTACK);
     synth.connect(midi, midi_event_factory.get_cc("R2"), envelope, envelope::RELEASE);
@@ -87,10 +95,11 @@ fn build_synth(midi_event_factory: &MidiEventFactory) -> Synth{
     synth.connect(midi, midi_event_factory.get_cc("R5"), envelope, envelope::DECAY);
 
     synth.connect(envelope, envelope::OUT, mul, multiply::A);
-    synth.connect(osc1, sinosc::OUT, mul, multiply::B);
+    synth.connect(mixer, mixer::OUT, mul, multiply::B);
 
     //synth.output(mul, multiply::OUT);
     synth.output(mul, multiply::OUT);
+    //synth.output(mixer, mixer::OUT);
 
     /*
     let osc2 = TriOsc::new();

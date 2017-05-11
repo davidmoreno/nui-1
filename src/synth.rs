@@ -208,7 +208,11 @@ impl Synth{
     }
 
     fn calculate_work_order(&mut self) -> Vec<usize>{
-        vec![0,1,2,3]
+        let mut wo = Vec::new();
+        for i in 0..self.blocks.len() {
+            wo.push(i);
+        }
+        wo
     }
 
     fn get_input_port_number(&self, block_id: BlockId, port_id: Port) -> usize{

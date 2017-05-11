@@ -46,7 +46,7 @@ from 0 82 cc 36 alias C1
 from 1 82 cc 37 alias C2
 from 2 82 cc 38 alias C3
 
-from 0 19 cc 40 alias S
+from 0 19 cc 40 alias H
 
 from 8 82 cc 41 alias REV
 from 13 82 cc 42 alias STOP

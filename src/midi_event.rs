@@ -87,6 +87,7 @@ impl MidiEventFactory{
         (channel as u16) << 8 | (controller as u16)
     }
     pub fn to_internal_midi(&self, rm: RawMidi) -> MidiEvent{
+        //println!("{:}", rm.bytes.into_iter().map(|b| format!("{:02X}", b)).collect::<Vec<String>>().connect("") );
         if (rm.bytes[0]&0x0F0)==0x90 {
             return MidiEvent::NoteOn{
                 timestamp: rm.time,
@@ -113,7 +114,7 @@ impl MidiEventFactory{
             }
         }
         else {
-            println!("{:}", rm.bytes.into_iter().map(|b| format!("{:02X}", b)).collect::<Vec<String>>().connect("") );
+            println!("{:}", rm.bytes.into_iter().map(|b| format!("{:02X}", b)).collect::<Vec<String>>().join("") );
             return MidiEvent::None
         }
     }
