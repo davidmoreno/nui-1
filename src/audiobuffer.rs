@@ -60,8 +60,9 @@ pub struct AudioBufferVector{
 }
 
 impl AudioBufferVector{
-    pub fn get(&mut self, idx: usize) -> AudioBuffer{
-        self.vector.get_mut(idx).unwrap().take().unwrap()
+    pub fn get(&mut self, idx: usize) -> Option<AudioBuffer>{
+        self.vector.get_mut(idx)
+            .and_then(|ab| ab.take())
     }
     // pub fn get_mut(&self, port: port::Port) -> RWAudioBuffer{
     //     let idx = port.nr;
@@ -115,7 +116,7 @@ mod tests{
 
         // Now borrow 1 as RO
         {
-            let r = rbv.get(port::Port::new(1));
+            let r = rbv.get(1).unwrap();
             for i in &r{
                 assert_eq!(*i, 0.0);
             }
@@ -128,23 +129,23 @@ mod tests{
 
         // First read and write on diferent buffers, must be refcell unborrowed at end
         {
-            let r = rbv.get(port::Port::new(0));
-            let mut w = rbv.get(port::Port::new(1));
+            let r = rbv.get(0).unwrap();
+            let mut w = rbv.get(1).unwrap();
 
             for o in &mut w {
                 *o = 128.0;
             }
 
-            rbv.put(port::Port::new(0), r);
-            rbv.put(port::Port::new(1), w);
+            rbv.put(0, r);
+            rbv.put(1, w);
         }
         // Now borrow 1 as RO
         {
-            let r = rbv.get(port::Port::new(1));
+            let r = rbv.get(1).unwrap();
             for i in &r{
                 assert!(*i == 128.0);
             }
-            rbv.put(port::Port::new(1), r);
+            rbv.put(1, r);
         }
     }
 
@@ -154,23 +155,23 @@ mod tests{
 
         // First read and write on diferent buffers, must be refcell unborrowed at end
         {
-            let r = rbv.get(port::Port::new(0));
-            let mut w = rbv.get(port::Port::new(1));
+            let r = rbv.get(0).unwrap();
+            let mut w = rbv.get(1).unwrap();
 
             for (o, i) in ::itertools::zip(&mut w, &r) {
                 *o = i + 128.0;
             }
 
-            rbv.put(port::Port::new(0), r);
-            rbv.put(port::Port::new(1), w);
+            rbv.put(0, r);
+            rbv.put(1, w);
         }
         // Now borrow 1 as RO
         {
-            let r = rbv.get(port::Port::new(1));
+            let r = rbv.get(1).unwrap();
             for i in &r{
                 assert!(*i == 128.0);
             }
-            rbv.put(port::Port::new(1), r);
+            rbv.put(1, r);
         }
     }
 }

@@ -21,8 +21,56 @@ use std::sync::{Arc, Mutex};
 use midi_event::{ MidiEventFactory, MidiEvent };
 
 fn main() {
-    let mut synth = Synth::new();
+    let midi_event_factory = MidiEventFactory::from_file("synth/ccmap.map");
 
+    let mut synth = build_synth(&midi_event_factory);
+
+/*
+    jack_run(synth, &midi_event_factory)
+}
+fn jack_run(synth: Synth, midi_event_factory: &MidiEventFactory){
+*/
+    let (client, _status) = Client::new("nui-1", client_options::NO_START_SERVER).unwrap();
+    let mut out_port = client.register_port("output", AudioOutSpec::default()).unwrap();
+    let shower = client.register_port("midi", MidiInSpec::default()).unwrap();
+
+    synth.pre_work();
+
+    let synth = Arc::new(Mutex::new(synth));
+
+    let tsynth = synth.clone();
+    let process = ClosureProcessHandler::new(move |_: &Client, ps: &ProcessScope| -> JackControl {
+        let mut synth = tsynth.lock().unwrap();
+        // Get output buffer
+        let show_p = MidiInPort::new(&shower, ps);
+        for e in show_p.iter() {
+            synth.send_midi( midi_event_factory.to_internal_midi(e) );
+        }
+
+        let mut out_p = AudioOutPort::new(&mut out_port, ps);
+        let out: &mut [f32] = &mut out_p;
+
+        // Write output
+        for (o, i) in ::itertools::zip(out.iter_mut(), synth.work()){
+            *o = *i;
+        }
+
+        // Continue as normal
+        JackControl::Continue
+    });
+
+    let active_client = AsyncClient::new(client, (), process).unwrap();
+
+    loop {
+        ::std::thread::sleep( ::std::time::Duration::new(100, 0) )
+    }
+
+    synth.lock().unwrap().post_work();
+}
+
+
+fn build_synth(midi_event_factory: &MidiEventFactory) -> Synth{
+    let mut synth = Synth::new();
 
     let midi = synth.get_midi();
     let osc1 = synth.add( sinosc::SinOsc::new() );
@@ -32,11 +80,11 @@ fn main() {
     synth.connect(midi, midi::FREQ, osc1, sinosc::FREQ);
     synth.connect(midi, midi::NOTE_ON, osc1, sinosc::NOTE_ON);
     synth.connect(midi, midi::NOTE_ON, envelope, envelope::NOTE_ON);
-    synth.connect(midi, midi::C1, envelope, envelope::ATTACK);
-    synth.connect(midi, midi::C2, envelope, envelope::RELEASE);
-    synth.connect(midi, midi::C3, envelope, envelope::SUSTAIN);
-    synth.connect(midi, midi::C4, envelope, envelope::SUSTAIN_LEVEL);
-    synth.connect(midi, midi::C5, envelope, envelope::DECAY);
+    synth.connect(midi, midi_event_factory.get_cc("R1"), envelope, envelope::ATTACK);
+    synth.connect(midi, midi_event_factory.get_cc("R2"), envelope, envelope::RELEASE);
+    synth.connect(midi, midi_event_factory.get_cc("R3"), envelope, envelope::SUSTAIN);
+    synth.connect(midi, midi_event_factory.get_cc("R4"), envelope, envelope::SUSTAIN_LEVEL);
+    synth.connect(midi, midi_event_factory.get_cc("R5"), envelope, envelope::DECAY);
 
     synth.connect(envelope, envelope::OUT, mul, multiply::A);
     synth.connect(osc1, sinosc::OUT, mul, multiply::B);
@@ -81,44 +129,22 @@ fn main() {
     midi.setControllerValue(MidiIn::C7, 0.85);
     */
     //println!("{:?}", synth);
+    synth
+}
 
-    let (client, _status) = Client::new("nui-1", client_options::NO_START_SERVER).unwrap();
-    let mut out_port = client.register_port("output", AudioOutSpec::default()).unwrap();
-    let shower = client.register_port("midi", MidiInSpec::default()).unwrap();
+#[cfg(test)]
+mod tests{
+    use super::*;
 
-    synth.pre_work();
+    #[test]
+    fn synth_loops(){
+        let midi_event_factory = MidiEventFactory::from_file("synth/ccmap.map");
+        let mut synth = build_synth(&midi_event_factory);
 
-    synth.send_midi(MidiEvent::ControllerChange{ timestamp: 0, channel: 0, value: 64, controller: 0});
-
-    let synth = Arc::new(Mutex::new(synth));
-    let midi_event_factory = MidiEventFactory::from_file("synth/ccmap.map");
-
-    let tsynth = synth.clone();
-    let process = ClosureProcessHandler::new(move |_: &Client, ps: &ProcessScope| -> JackControl {
-        let mut synth = tsynth.lock().unwrap();
-        // Get output buffer
-        let show_p = MidiInPort::new(&shower, ps);
-        for e in show_p.iter() {
-            synth.send_midi( midi_event_factory.to_internal_midi(e) );
+        synth.pre_work();
+        for i in 0..1024{
+            synth.work();
         }
-
-        let mut out_p = AudioOutPort::new(&mut out_port, ps);
-        let out: &mut [f32] = &mut out_p;
-
-        // Write output
-        for (o, i) in ::itertools::zip(out.iter_mut(), synth.work()){
-            *o = *i;
-        }
-
-        // Continue as normal
-        JackControl::Continue
-    });
-
-    let _active_client = AsyncClient::new(client, (), process).unwrap();
-
-    loop {
-        ::std::thread::sleep( ::std::time::Duration::new(100, 0) )
+        synth.post_work();
     }
-
-    synth.lock().unwrap().post_work();
 }

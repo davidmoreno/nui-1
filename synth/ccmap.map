@@ -1,54 +1,54 @@
-0 16 cc 0
-1 16 cc 1
-2 16 cc 2
-3 16 cc 3
-4 16 cc 4
-5 16 cc 5
-6 16 cc 6
-7 16 cc 7
+from 0 16 cc 0 alias R1
+from 1 16 cc 1 alias R2
+from 2 16 cc 2 alias R3
+from 3 16 cc 3 alias R4
+from 4 16 cc 4 alias R5
+from 5 16 cc 5 alias R6
+from 6 16 cc 6 alias R7
+from 7 16 cc 7 alias R8
 
-0 18 cc 8
+from 0 18 cc 8 alias R9
 
-0 17 cc 9
-1 17 cc 10
-2 17 cc 11
-3 17 cc 12
-4 17 cc 13
-5 17 cc 14
-6 17 cc 15
-7 17 cc 16
+from 0 17 cc 9 alias S1
+from 1 17 cc 10 alias S2
+from 2 17 cc 11 alias S3
+from 3 17 cc 12 alias S4
+from 4 17 cc 13 alias S5
+from 5 17 cc 14 alias S6
+from 6 17 cc 15 alias S7
+from 7 17 cc 16 alias S8
 
-1 18 cc 17
+from 1 18 cc 17 alias S9
 
-0 80 cc 18
-1 80 cc 19
-2 80 cc 20
-3 80 cc 21
-4 80 cc 22
-5 80 cc 23
-6 80 cc 24
-7 80 cc 25
+from 0 80 cc 18 alias A1
+from 1 80 cc 19 alias A2
+from 2 80 cc 20 alias A3
+from 3 80 cc 21 alias A4
+from 4 80 cc 22 alias A5
+from 5 80 cc 23 alias A6
+from 6 80 cc 24 alias A7
+from 7 80 cc 25 alias A8
 
-0 83 cc 26
+from 0 83 cc 26 alias A9
 
-0 81 cc 27
-1 81 cc 28
-2 81 cc 29
-3 81 cc 30
-4 81 cc 31
-5 81 cc 32
-6 81 cc 33
-7 81 cc 34
+from 0 81 cc 27 alias B1
+from 1 81 cc 28 alias B2
+from 2 81 cc 29 alias B3
+from 3 81 cc 30 alias B4
+from 4 81 cc 31 alias B5
+from 5 81 cc 32 alias B6
+from 6 81 cc 33 alias B7
+from 7 81 cc 34 alias B8
 
-1 83 cc 35
+from 1 83 cc 35 alias B9
 
-0 82 cc 36
-1 82 cc 37
-2 82 cc 38
+from 0 82 cc 36 alias C1
+from 1 82 cc 37 alias C2
+from 2 82 cc 38 alias C3
 
-0 19 cc 40
+from 0 19 cc 40 alias S
 
-8 82 back
-13 82 stop
-14 82 play
-10 82 record
+from 8 82 cc 41 alias REV
+from 13 82 cc 42 alias STOP
+from 14 82 cc 43 alias PLAY
+from 10 82 cc 44 alias RECORD

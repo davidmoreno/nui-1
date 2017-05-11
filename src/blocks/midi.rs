@@ -12,18 +12,18 @@ pub struct MIDI{
     cc: Vec<f32>,
 }
 
-pub const FREQ:Port = Port{nr:0};
-pub const NOTE_ON:Port = Port{nr:1};
+const MAX_CC:usize = 64;
 
-pub const C1:Port = Port{nr:2};
-pub const C2:Port = Port{nr:3};
-pub const C3:Port = Port{nr:4};
-pub const C4:Port = Port{nr:5};
-pub const C5:Port = Port{nr:6};
-pub const C6:Port = Port{nr:7};
-pub const C7:Port = Port{nr:8};
+pub const FREQ:Port = Port{nr:MAX_CC};
+pub const NOTE_ON:Port = Port{nr:MAX_CC+1};
 
-const MAX_CC:u8 = 8;
+pub const C1:Port = Port{nr:0};
+pub const C2:Port = Port{nr:1};
+pub const C3:Port = Port{nr:2};
+pub const C4:Port = Port{nr:3};
+pub const C5:Port = Port{nr:4};
+pub const C6:Port = Port{nr:5};
+pub const C7:Port = Port{nr:6};
 
 impl MIDI{
     pub fn new() -> Box<MIDI>{
@@ -31,7 +31,7 @@ impl MIDI{
             freq: 1.0,
             velocity: 0.0,
             last_note: 0,
-            cc: vec![0.0; 128]
+            cc: vec![0.5; MAX_CC]
         })
     }
     pub fn event(&mut self, event: ::midi_event::MidiEvent ){
@@ -62,19 +62,19 @@ impl MIDI{
 
 impl ProcessBlock for MIDI{
     fn process(&mut self, _input: &mut AudioBufferVector, output: &mut AudioBufferVector){
-        let mut freq = output.get(0);
-        let mut note_on = output.get(1);
+        let mut freq = output.get(FREQ.nr).unwrap();
+        let mut note_on = output.get(NOTE_ON.nr).unwrap();
         for o in &mut freq{
             *o = self.freq;
         }
         for o in &mut note_on{
             *o = self.velocity;
         }
-        output.put(0, freq);
-        output.put(1, note_on);
+        output.put(FREQ.nr, freq);
+        output.put(NOTE_ON.nr, note_on);
         for i in 0..MAX_CC {
-            let port:usize = i as usize + 2;
-            let mut data = output.get(port);
+            let port:usize = i as usize;
+            let mut data = output.get(port).unwrap();
 
             let v = self.cc[i as usize];
             for o in &mut data{
@@ -86,7 +86,7 @@ impl ProcessBlock for MIDI{
     }
     fn typename(&self) -> &str{ "MIDI" }
     fn input_count(&self) -> usize { 0 }
-    fn output_count(&self) -> usize { 10 }
+    fn output_count(&self) -> usize { 2 + 64 } // Not all 128 Midi CC... yet.
 
     fn into_midi(&mut self) -> Option<&mut ::blocks::midi::MIDI> { Some(self) }
 }

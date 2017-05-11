@@ -19,9 +19,9 @@ impl Multiply{
 
 impl ProcessBlock for Multiply{
     fn process(&mut self, inputs: &mut AudioBufferVector, outputs: &mut AudioBufferVector){
-        let mut output = outputs.get(OUT.nr);
-        let a = inputs.get(A.nr);
-        let b = inputs.get(B.nr);
+        let mut output = outputs.get(OUT.nr).unwrap();
+        let a = inputs.get(A.nr).unwrap();
+        let b = inputs.get(B.nr).unwrap();
         for (o, a, b) in izip!(&mut output, &a, &b){
              *o = a * b;
         }

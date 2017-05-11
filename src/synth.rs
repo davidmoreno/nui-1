@@ -150,11 +150,17 @@ impl Synth{
                 let block = &cblock.block;
                 //println!("{}", Colour::Green.paint(format!("## {:?} ({:?}) <({:?}) <({:?})", block, block_id, cblock.inputs, cblock.outputs)));
                 for port_in in 0..block.input_count() {
-                    inputs.put(port_in, audiobuffers.get( self.get_input_port_number(BlockId(block_id), Port::new(port_in)) ));
+                    let ipn = self.get_input_port_number(BlockId(block_id), Port::new(port_in));
+                    let ab = audiobuffers.get( ipn )
+                        .expect(format!("ERROR module {:?}: Input port {} at {:?}/{:?} already in use.", block.typename(), ipn, block_id, port_in).as_str());
+                    inputs.put(port_in, ab);
                 }
                 // println!("Got i");
                 for port_out in 0..block.output_count() {
-                    outputs.put(port_out, audiobuffers.get( self.get_output_port_number(BlockId(block_id), Port::new(port_out)) ));
+                    let opn = self.get_output_port_number(BlockId(block_id), Port::new(port_out));
+                    let ab = audiobuffers.get( opn )
+                        .expect(format!("ERROR module {:?}: Input port {} at {:?}/{:?} already in use.", block.typename(), opn, block_id, port_out).as_str());
+                    outputs.put(port_out, ab);
                 }
                 // println!("Got io");
             }
@@ -165,10 +171,11 @@ impl Synth{
                 let block = &self.blocks[pb].block;
                 // println!("Put io");
                 for port_in in 0..block.input_count() {
-                    audiobuffers.put(self.get_input_port_number(BlockId(block_id), Port::new(port_in)), inputs.get(port_in) );
+                    audiobuffers.put(self.get_input_port_number(BlockId(block_id), Port::new(port_in)), inputs.get(port_in).unwrap() );
                 }
                 for port_out in 0..block.output_count() {
-                    audiobuffers.put(self.get_output_port_number(BlockId(block_id), Port::new(port_out)), outputs.get(port_out) );
+                    let op = outputs.get(port_out).expect(format!("ERROR {} forgot to return buffer {}", block.typename(), port_out).as_str());
+                    audiobuffers.put(self.get_output_port_number(BlockId(block_id), Port::new(port_out)), op );
                 }
                 audiobuffers.check_all_some();
                 // println!("Done all ok");
@@ -178,7 +185,7 @@ impl Synth{
         let out_port = self.output.port;
 
         let outputp = self.blocks[out_block].outputs[out_port.nr];
-        let output = audiobuffers.get(outputp);
+        let output = audiobuffers.get(outputp).unwrap();
         //println!("{}: {}", workdata.nframes, Colour::Blue.paint(format!("{}", output)));
 
         for (o, i) in ::itertools::zip(&mut workdata.output, &output){

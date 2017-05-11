@@ -21,7 +21,7 @@ impl Fixed{
 
 impl ProcessBlock for Fixed{
     fn process(&mut self, _input: &mut AudioBufferVector, outputs: &mut AudioBufferVector){
-        let mut output=outputs.get(OUT.nr);
+        let mut output=outputs.get(OUT.nr).unwrap();
 
         for o in &mut output{
             *o = self.value;

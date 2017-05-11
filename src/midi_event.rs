@@ -30,44 +30,55 @@ pub enum MidiEvent{
 
 
 pub struct MidiEventFactory{
-    map: HashMap<u16, u8>
+    ccmap: HashMap<u16, u8>,
+    alias: HashMap<String, u8>
 }
 
 
 impl MidiEventFactory{
     pub fn new() -> Self{
-        Self{ map: HashMap::new() }
+        Self{ ccmap: HashMap::new(), alias: HashMap::new() }
     }
     pub fn from_file(filename: &str) -> Self{
-        let mut map = HashMap::new();
+        let mut ccmap = HashMap::new();
+        let mut alias = HashMap::new();
 
         let file = BufReader::new(
             File::open(filename)
-                .expect(format!("Could not open midi map file {:?}!", filename).as_str()
+                .expect(format!("ERROR cant open {}!", filename).as_str()
             ));
-        for l in file.lines(){
+        for (lineno, l) in file.lines().enumerate(){
             let l = l.unwrap();
             if l.len()==0 {
                 continue;
             }
             let ll = l.split_whitespace().collect::<Vec<&str>>();
-            match ll.get(2) {
+            match ll.get(0) {
+                Some(&"from") => {
+                    ccmap.insert( Self::cc_to_u16(ll[1].parse::<u8>().unwrap(), ll[2].parse::<u8>().unwrap()), ll[4].parse::<u8>().unwrap());
+                    match ll.get(5) {
+                        Some(&"alias") => {
+                            alias.insert( ll[6].to_string(), ll[4].parse::<u8>().unwrap() );
+                        }
+                        Some(other) => {
+                            println!("WARNING {}:{}: Unknown argument {}", filename, lineno+1, other.yellow());
+                        }
+                        None => ()
+                    }
+                }
                 None =>
-                    panic!("Bad formed map line: {:?}", l),
-                Some(&"cc") => {
-                    map.insert( Self::cc_to_u16(ll[0].parse::<u8>().unwrap(), ll[1].parse::<u8>().unwrap()), ll[3].parse::<u8>().unwrap());
-                },
+                    panic!("ERROR {}:{}: Invalid line {:?}", filename, lineno+1, l),
                 Some(other) =>
-                    println!("Map type {} not supported yet. Ignored.", other.yellow())
+                    println!("WARNING {}:{}: Type {} not supported yet.", filename, lineno+1, other.yellow())
             };
         }
 
 
-        Self{map}
+        Self{ccmap, alias}
     }
     pub fn map(&self, channel: u8, controller: u8) -> u8{
-        println!("{:?},{:?} ({:02X}) -> {:?}", channel, controller, Self::cc_to_u16(channel, controller), self.map.get( &Self::cc_to_u16(channel, controller) ));
-        match self.map.get( &Self::cc_to_u16(channel, controller) ) {
+        println!("{:?},{:?} ({:02X}) -> {:?}", channel, controller, Self::cc_to_u16(channel, controller), self.ccmap.get( &Self::cc_to_u16(channel, controller) ));
+        match self.ccmap.get( &Self::cc_to_u16(channel, controller) ) {
             Some(controller) => controller.clone(),
             None => controller
         }
@@ -105,5 +116,10 @@ impl MidiEventFactory{
             println!("{:}", rm.bytes.into_iter().map(|b| format!("{:02X}", b)).collect::<Vec<String>>().connect("") );
             return MidiEvent::None
         }
+    }
+    pub fn get_cc(&self, name: &str) -> ::port::Port{
+        ::port::Port::new(
+            *self.alias.get(name).expect(format!("Alias now known: {}", name).as_str()) as usize
+        )
     }
 }

@@ -27,9 +27,9 @@ impl ProcessBlock for SinOsc {
         self.sample_rate = config.sample_rate as f32
     }
     fn process(&mut self, input: &mut AudioBufferVector, output: &mut AudioBufferVector){
-        let mut out = output.get(0);
-        let freq = input.get(0);
-        let note_on = input.get(1);
+        let mut out = output.get(0).unwrap();
+        let freq = input.get(0).unwrap();
+        let note_on = input.get(1).unwrap();
         for (o, f, n) in izip!(&mut out, &freq, &note_on){
             if *n > 0.0 {
                 *o = f32::sin(self.phase * 2.0 * ::std::f32::consts::PI);

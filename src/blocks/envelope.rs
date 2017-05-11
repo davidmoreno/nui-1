@@ -37,9 +37,9 @@ impl Envelope{
 
 impl ProcessBlock for Envelope{
     fn process(&mut self, inputs: &mut AudioBufferVector, outputs: &mut AudioBufferVector){
-        let mut out = outputs.get(0);
-        let note_on = inputs.get(0);
-        let attack = inputs.get(1);
+        let mut out = outputs.get(0).unwrap();
+        let note_on = inputs.get(0).unwrap();
+        let attack = inputs.get(1).unwrap();
         for (o,n,a) in izip!(&mut out, &note_on, &attack){
             match self.phase {
                 Phase::None => {
