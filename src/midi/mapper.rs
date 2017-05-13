@@ -5,37 +5,17 @@ use std::io::BufReader;
 use std::io::BufRead;
 use colored::*;
 
+use ::midi::event::MidiEvent;
+
+
 #[derive(Debug)]
-pub enum MidiEvent{
-    NoteOn{
-        channel: u8,
-        note: u8,
-        velocity: u8,
-        timestamp: u32,
-    },
-    NoteOff{
-        channel: u8,
-        note: u8,
-        velocity: u8,
-        timestamp: u32,
-    },
-    ControllerChange{
-        channel: u8,
-        controller: u8,
-        value: u8,
-        timestamp: u32,
-    },
-    None
-}
-
-
-pub struct MidiEventFactory{
+pub struct Mapper{
     ccmap: HashMap<u16, u8>,
     alias: HashMap<String, u8>
 }
 
 
-impl MidiEventFactory{
+impl Mapper{
     pub fn new() -> Self{
         Self{ ccmap: HashMap::new(), alias: HashMap::new() }
     }
@@ -86,7 +66,7 @@ impl MidiEventFactory{
     fn cc_to_u16(channel:u8, controller:u8) -> u16{
         (channel as u16) << 8 | (controller as u16)
     }
-    pub fn to_internal_midi(&self, rm: RawMidi) -> MidiEvent{
+    pub fn event_from_raw(&self, rm: RawMidi) -> MidiEvent{
         println!("{:}", rm.bytes.into_iter().map(|b| format!("{:02X}", b)).collect::<Vec<String>>().connect("") );
         if (rm.bytes[0]&0x0F0)==0x90 {
             return MidiEvent::NoteOn{

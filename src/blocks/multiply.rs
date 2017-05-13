@@ -33,4 +33,12 @@ impl ProcessBlock for Multiply{
     fn typename(&self) -> &str{ "Multiply" }
     fn input_count(&self) -> usize { 2 }
     fn output_count(&self) -> usize { 1 }
+    fn port(&self, name: &str) -> Port{
+        match name {
+            "output" => OUT,
+            "a" => A,
+            "b" => B,
+            _ => panic!("Unknown port {}/{}", self.typename(), name)
+        }
+    }
 }

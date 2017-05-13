@@ -1,7 +1,7 @@
 use audiobuffer::*;
 use processblock::ProcessBlock;
 use port::Port;
-use midi_event::MidiEvent;
+use jack::prelude::RawMidi;
 
 #[derive(Debug, Clone, Copy)]
 pub struct BlockId(usize);
@@ -201,7 +201,7 @@ impl Synth{
     pub fn post_work(&mut self){
         self.workdata=None;
     }
-    pub fn send_midi(&mut self, event: MidiEvent){
+    pub fn send_midi(&mut self, event: RawMidi){
         let genblock = &mut self.blocks[0].block;
         let midi = &mut genblock.into_midi().unwrap();
         midi.event(event)
@@ -235,6 +235,13 @@ impl Synth{
                     Some(x) => *x
                 }
         }
+    }
+
+    pub fn block(&self, bl: &BlockId) -> &Box<ProcessBlock>{
+        &self.blocks[bl.0].block
+    }
+    pub fn set_cc_value(&mut self, cc_name: &str, value: f32){
+        self.blocks[0].block.into_midi().unwrap().set_cc_value(cc_name, value);
     }
 }
 

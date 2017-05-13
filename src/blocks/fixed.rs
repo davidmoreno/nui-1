@@ -31,4 +31,10 @@ impl ProcessBlock for Fixed{
     fn typename(&self) -> &str{ "Fixed" }
     fn input_count(&self) -> usize { 0 }
     fn output_count(&self) -> usize { 1 }
+    fn port(&self, name: &str) -> Port{
+        match name {
+            "output" => OUT,
+            _ => panic!("Unknown port {}/{}", self.typename(), name)
+        }
+    }
 }

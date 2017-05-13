@@ -2,7 +2,9 @@ use audiobuffer::*;
 use port::Port;
 use processblock::ProcessBlock;
 use processblock::SynthConfig;
-use ::midi_event::MidiEvent;
+use ::midi::event::MidiEvent;
+use ::midi::mapper::Mapper;
+use jack::prelude::RawMidi;
 
 #[derive(Debug)]
 pub struct MIDI{
@@ -10,6 +12,7 @@ pub struct MIDI{
     velocity: f32,
     last_note: u8,
     cc: Vec<f32>,
+    mapper: Mapper,
 }
 
 const MAX_CC:usize = 64;
@@ -17,24 +20,18 @@ const MAX_CC:usize = 64;
 pub const FREQ:Port = Port{nr:MAX_CC};
 pub const NOTE_ON:Port = Port{nr:MAX_CC+1};
 
-pub const C1:Port = Port{nr:0};
-pub const C2:Port = Port{nr:1};
-pub const C3:Port = Port{nr:2};
-pub const C4:Port = Port{nr:3};
-pub const C5:Port = Port{nr:4};
-pub const C6:Port = Port{nr:5};
-pub const C7:Port = Port{nr:6};
-
 impl MIDI{
     pub fn new() -> Box<MIDI>{
         Box::new(MIDI{
             freq: 1.0,
             velocity: 0.0,
             last_note: 0,
-            cc: vec![0.5; MAX_CC]
+            cc: vec![0.5; MAX_CC],
+            mapper: Mapper::from_file("synth/ccmap.map")
         })
     }
-    pub fn event(&mut self, event: ::midi_event::MidiEvent ){
+    pub fn event(&mut self, raw_event: RawMidi ){
+        let event = self.mapper.event_from_raw(raw_event);
         println!("MIDI Event: {:?}", event);
         match event {
             MidiEvent::NoteOn{ note, velocity, channel: _, timestamp: _ } => {
@@ -55,8 +52,10 @@ impl MIDI{
             }
         }
     }
-    pub fn cc_value(&mut self, cc: u8, value: f32){
-        self.cc[cc as usize]=value;
+    pub fn set_cc_value(&mut self, cc: &str, value: f32){
+        let cc = self.mapper.get_cc(cc).nr;
+        println!("Force set CC to {} = {}", cc, value);
+        self.cc[cc]=value;
     }
 }
 
@@ -89,6 +88,14 @@ impl ProcessBlock for MIDI{
     fn output_count(&self) -> usize { 2 + 64 } // Not all 128 Midi CC... yet.
 
     fn into_midi(&mut self) -> Option<&mut ::blocks::midi::MIDI> { Some(self) }
+
+    fn port(&self, name: &str) -> Port{
+        match name {
+            "freq" => FREQ,
+            "note_on" => NOTE_ON,
+            _ => self.mapper.get_cc(name)
+        }
+    }
 }
 
 const BASE_A4:f32 =440.0;

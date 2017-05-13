@@ -1,5 +1,6 @@
 use audiobuffer::*;
 use std::fmt;
+use port::Port;
 
 #[derive(Debug)]
 pub struct SynthConfig{
@@ -15,4 +16,5 @@ pub trait ProcessBlock : fmt::Debug + Send{
     fn typename(&self) -> &str;
     fn input_count(&self) -> usize;
     fn output_count(&self) -> usize;
+    fn port(&self, name: &str) -> Port;
 }

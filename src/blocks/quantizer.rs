@@ -33,4 +33,12 @@ impl ProcessBlock for Quantizer{
     fn typename(&self) -> &str{ "Quantizer" }
     fn input_count(&self) -> usize { 2 }
     fn output_count(&self) -> usize { 1 }
+    fn port(&self, name: &str) -> Port{
+        match name {
+            "output" => OUT,
+            "input" => INPUT,
+            "nquants" => NQUANTS,
+            _ => panic!("Unknown port {}/{}", self.typename(), name)
+        }
+    }
 }

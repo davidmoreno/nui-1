@@ -104,4 +104,13 @@ impl ProcessBlock for MoogFilter{
     fn typename(&self) -> &str{ "MoogFilter" }
     fn input_count(&self) -> usize { 3 }
     fn output_count(&self) -> usize { 1 }
+    fn port(&self, name: &str) -> Port{
+        match name {
+            "output" => OUT,
+            "input" => INPUT,
+            "cutoff" => CUTOFF,
+            "resonance" => RESONANCE,
+            _ => panic!("Unknown port {}/{}", self.typename(), name)
+        }
+    }
 }

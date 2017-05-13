@@ -20,7 +20,7 @@ pub const SUSTAIN:Port = Port{nr:3};
 pub const SUSTAIN_LEVEL:Port = Port{nr:4};
 pub const RELEASE:Port = Port{nr:5};
 
-pub const OUT:Port = Port{nr:0};
+pub const OUTPUT:Port = Port{nr:0};
 
 const MAX_ATTACK_TIME: f32 = 5.0;
 
@@ -95,4 +95,18 @@ impl ProcessBlock for Envelope{
     fn typename(&self) -> &str{ "Envelope" }
     fn input_count(&self) -> usize { 6 }
     fn output_count(&self) -> usize { 1 }
+    fn port(&self, name: &str) -> Port{
+        match name {
+            "note_on" => NOTE_ON,
+            "attack" => ATTACK,
+            "decay" => DECAY,
+            "sustain" => SUSTAIN,
+            "release" => RELEASE,
+            "sustain_level" => SUSTAIN_LEVEL,
+
+            "output" => OUTPUT,
+            _ => panic!("Unknown port {}/{}", self.typename(), name)
+        }
+    }
+
 }

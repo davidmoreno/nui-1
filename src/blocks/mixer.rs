@@ -36,4 +36,13 @@ impl ProcessBlock for Mixer {
     fn typename(&self) -> &str{ "Mixer" }
     fn input_count(&self) -> usize { 3 }
     fn output_count(&self) -> usize { 1 }
+    fn port(&self, name: &str) -> Port{
+        match name {
+            "output" => OUT,
+            "a" => A,
+            "b" => B,
+            "a_b" => A_B,
+            _ => panic!("Unknown port {}/{}", self.typename(), name)
+        }
+    }
 }

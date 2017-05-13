@@ -51,4 +51,13 @@ impl ProcessBlock for SqrOsc {
     fn typename(&self) -> &str{ "SqrOsc" }
     fn input_count(&self) -> usize { 3 }
     fn output_count(&self) -> usize { 1 }
+    fn port(&self, name: &str) -> Port{
+        match name {
+            "output" => OUT,
+            "freq" => FREQ,
+            "note_on" => NOTE_ON,
+            "square_width" => SQUARE_WIDTH,
+            _ => panic!("Unknown port {}/{}", self.typename(), name)
+        }
+    }
 }

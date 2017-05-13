@@ -1,0 +1,24 @@
+block osc1 sinosc
+block env envelope
+block mul multiply
+
+connect midi:R1 env:attack
+connect midi:R2 env:decay
+connect midi:R3 env:sustain
+connect midi:R4 env:sustain_level
+connect midi:R5 env:release
+connect midi:note_on env:note_on
+
+connect midi:note_on osc1:note_on
+connect midi:freq osc1:freq
+
+connect osc1:output mul:a
+connect env:output mul:b
+
+midi_cc R1 1
+midi_cc R2 20
+midi_cc R3 20
+midi_cc R4 127
+midi_cc R5 20
+
+output mul:output
