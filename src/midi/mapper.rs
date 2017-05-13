@@ -57,7 +57,7 @@ impl Mapper{
         Self{ccmap, alias}
     }
     pub fn map(&self, channel: u8, controller: u8) -> u8{
-        println!("{:?},{:?} ({:02X}) -> {:?}", channel, controller, Self::cc_to_u16(channel, controller), self.ccmap.get( &Self::cc_to_u16(channel, controller) ));
+        //println!("{:?},{:?} ({:02X}) -> {:?}", channel, controller, Self::cc_to_u16(channel, controller), self.ccmap.get( &Self::cc_to_u16(channel, controller) ));
         match self.ccmap.get( &Self::cc_to_u16(channel, controller) ) {
             Some(controller) => controller.clone(),
             None => controller
@@ -67,7 +67,7 @@ impl Mapper{
         (channel as u16) << 8 | (controller as u16)
     }
     pub fn event_from_raw(&self, rm: RawMidi) -> MidiEvent{
-        println!("{:}", rm.bytes.into_iter().map(|b| format!("{:02X}", b)).collect::<Vec<String>>().connect("") );
+        // println!("{:}", rm.bytes.into_iter().map(|b| format!("{:02X}", b)).collect::<Vec<String>>().join("") );
         if (rm.bytes[0]&0x0F0)==0x90 {
             return MidiEvent::NoteOn{
                 timestamp: rm.time,

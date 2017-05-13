@@ -1,7 +1,38 @@
 block osc1 sinosc
-block env envelope
-block mul multiply
+connect midi:note_on osc1:note_on
+connect midi:freq osc1:freq
+block mosc1 multiply
+connect midi:S1 mosc1:a
+connect osc1 mosc1:b
 
+block osc2 sawosc
+connect midi:note_on osc2:note_on
+connect midi:freq osc2:freq
+block mosc2 multiply
+connect midi:S2 mosc2:a
+connect osc2 mosc2:b
+
+block osc3 triosc
+connect midi:note_on osc3:note_on
+connect midi:freq osc3:freq
+block mosc3 multiply
+connect midi:S3 mosc3:a
+connect osc3 mosc3:b
+
+block osc4 sqrosc
+connect midi:note_on osc4:note_on
+connect midi:freq osc4:freq
+block mosc4 multiply
+connect midi:S4 mosc4:a
+connect osc4 mosc4:b
+
+block osc_mixer adder
+connect mosc1 osc_mixer:a
+connect mosc2 osc_mixer:b
+connect mosc3 osc_mixer:c
+connect mosc4 osc_mixer:d
+
+block env envelope
 connect midi:R1 env:attack
 connect midi:R2 env:decay
 connect midi:R3 env:sustain
@@ -9,11 +40,9 @@ connect midi:R4 env:sustain_level
 connect midi:R5 env:release
 connect midi:note_on env:note_on
 
-connect midi:note_on osc1:note_on
-connect midi:freq osc1:freq
-
-connect osc1:output mul:a
-connect env:output mul:b
+block mul multiply
+connect osc_mixer mul:a
+connect env mul:b
 
 midi_cc R1 1
 midi_cc R2 20
@@ -21,4 +50,4 @@ midi_cc R3 20
 midi_cc R4 127
 midi_cc R5 20
 
-output mul:output
+output mul

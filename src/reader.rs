@@ -6,7 +6,7 @@ use colored::*;
 
 use synth::{Synth, BlockId};
 use processblock::ProcessBlock;
-use blocks::{sinosc, sqrosc, midi, envelope, multiply, mixer, moog_filter, triosc, sawosc, quantizer, fixed};
+use blocks::{sinosc, sqrosc, midi, envelope, multiply, mixer, moog_filter, triosc, sawosc, quantizer, fixed, adder};
 use port::Port;
 
 pub fn read_synth(filename: &str) -> Synth{
@@ -36,18 +36,18 @@ pub fn read_synth(filename: &str) -> Synth{
             Some(&"connect") => {
                 let a = ll.get(1).unwrap().split(&":").collect::<Vec<&str>>();
                 let blocka = blocks[&a.get(0).unwrap().to_string()];
-                let porta = synth.block(&blocka).port(a.get(1).unwrap());
+                let porta = synth.block(&blocka).port(a.get(1).unwrap_or(&"output"));
 
                 let b = ll.get(2).unwrap().split(&":").collect::<Vec<&str>>();
-                let blockb = blocks[&b.get(0).unwrap().to_string()];
-                let portb = synth.block(&blockb).port(b.get(1).unwrap());
+                let blockb = blocks.get(&b.get(0).unwrap().to_string()).expect(format!("Unknown block output {}", ll.get(2).unwrap()).as_str()).clone();
+                let portb = synth.block(&blockb).port(b.get(1).unwrap_or(&"input"));
 
                 synth.connect(blocka, porta, blockb, portb);
             }
             Some(&"output") => {
                 let a = ll.get(1).unwrap().split(&":").collect::<Vec<&str>>();
                 let blocka = blocks[&a.get(0).unwrap().to_string()];
-                let porta = synth.block(&blocka).port(a.get(1).unwrap());
+                let porta = synth.block(&blocka).port(a.get(1).unwrap_or(&"output"));
 
                 synth.output(blocka, porta);
             }
@@ -71,9 +71,11 @@ pub fn create_block(synth: &mut Synth, name: &str) -> BlockId{
         "triosc" => triosc::TriOsc::new(),
         "sawosc" => sawosc::SawOsc::new(),
         "envelope" => envelope::Envelope::new(),
+        "adder" => adder::Adder::new(),
         "multiply" => multiply::Multiply::new(),
         "moog_vcf" => moog_filter::MoogFilter::new(),
         "quantizer" => quantizer::Quantizer::new(),
+        "mixer" => mixer::Mixer::new(),
         _ => panic!("Unknown block type: {}", name.yellow())
     };
 

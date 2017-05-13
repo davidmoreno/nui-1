@@ -5,6 +5,7 @@ pub mod sawosc;
 pub mod midi;
 pub mod fixed;
 pub mod envelope;
+pub mod adder;
 pub mod multiply;
 pub mod mixer;
 pub mod moog_filter;

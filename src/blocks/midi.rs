@@ -32,7 +32,7 @@ impl MIDI{
     }
     pub fn event(&mut self, raw_event: RawMidi ){
         let event = self.mapper.event_from_raw(raw_event);
-        println!("MIDI Event: {:?}", event);
+        // println!("MIDI Event: {:?}", event);
         match event {
             MidiEvent::NoteOn{ note, velocity, channel: _, timestamp: _ } => {
                 self.freq=note_to_freq(note as f32);
