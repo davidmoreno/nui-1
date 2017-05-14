@@ -11,6 +11,7 @@ pub struct MIDI{
     velocity: f32,
     last_note: u8,
     cc: Vec<f32>,
+    note_changed: bool,
     mapper: Mapper,
 }
 
@@ -18,6 +19,7 @@ const MAX_CC:usize = 64;
 
 pub const FREQ:Port = Port{nr:MAX_CC};
 pub const NOTE_ON:Port = Port{nr:MAX_CC+1};
+pub const NOTE:Port = Port{nr:MAX_CC+2};
 
 impl MIDI{
     pub fn new() -> Box<MIDI>{
@@ -25,6 +27,7 @@ impl MIDI{
             freq: 1.0,
             velocity: 0.0,
             last_note: 0,
+            note_changed: false,
             cc: vec![0.5; MAX_CC],
             mapper: Mapper::from_file("synth/ccmap.map")
         })
@@ -36,12 +39,12 @@ impl MIDI{
             MidiEvent::NoteOn{ note, velocity, channel: _, timestamp: _ } => {
                 self.freq=note_to_freq(note as f32);
                 self.velocity=velocity as f32/127.0;
-                self.last_note=note
+                self.last_note=note;
+                self.note_changed=true;
             }
             MidiEvent::NoteOff{ note, velocity: _, channel: _, timestamp: _ } => {
                 if note == self.last_note{
                     self.velocity=0.0;
-                    self.freq=0.0;
                 }
             }
             MidiEvent::ControllerChange{ value, controller, channel: _, timestamp: _ } => {
@@ -68,6 +71,9 @@ impl ProcessBlock for MIDI{
         for o in &mut note_on{
             *o = self.velocity;
         }
+        if self.note_changed{
+            note_on.set(0, 0.0);
+        }
         output.put(FREQ.nr, freq);
         output.put(NOTE_ON.nr, note_on);
         for i in 0..MAX_CC {
@@ -81,16 +87,18 @@ impl ProcessBlock for MIDI{
 
             output.put(port, data);
         }
+        self.note_changed=false;
     }
     fn typename(&self) -> &str{ "MIDI" }
     fn input_count(&self) -> usize { 0 }
-    fn output_count(&self) -> usize { 2 + 64 } // Not all 128 Midi CC... yet.
+    fn output_count(&self) -> usize { 3 + 64 } // Not all 128 Midi CC... yet.
 
     fn into_midi(&mut self) -> Option<&mut ::blocks::midi::MIDI> { Some(self) }
 
     fn port(&self, name: &str) -> Port{
         match name {
             "freq" => FREQ,
+            "note" => NOTE,
             "note_on" => NOTE_ON,
             _ => self.mapper.get_cc(name)
         }

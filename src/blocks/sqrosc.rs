@@ -10,8 +10,7 @@ pub struct SqrOsc{
 }
 
 pub const FREQ:Port = Port{nr:0};
-pub const NOTE_ON:Port = Port{nr:1};
-pub const SQUARE_WIDTH:Port = Port{nr:2};
+pub const SQUARE_WIDTH:Port = Port{nr:1};
 pub const OUT:Port = Port{nr:0};
 
 impl SqrOsc{
@@ -30,32 +29,24 @@ impl ProcessBlock for SqrOsc {
     fn process(&mut self, input: &mut AudioBufferVector, output: &mut AudioBufferVector){
         let mut out = output.get(0).unwrap();
         let freq = input.get(0).unwrap();
-        let note_on = input.get(1).unwrap();
-        let sqr_width = input.get(2).unwrap();
-        for (o, f, n, w) in izip!(&mut out, &freq, &note_on, &sqr_width){
-            if *n > 0.0 {
-                *o = if self.phase>*w { -1.0 } else { 1.0 };
-                self.phase+=f/self.sample_rate;
-                self.phase = self.phase % 1.0;
-            }
-            else {
-                *o=0.0;
-            }
+        let sqr_width = input.get(1).unwrap();
+        for (o, f, w) in izip!(&mut out, &freq, &sqr_width){
+            *o = if self.phase>*w { -1.0 } else { 1.0 };
+            self.phase+=f/self.sample_rate;
+            self.phase = self.phase % 1.0;
         }
 
         output.put(0, out);
         input.put(0, freq);
-        input.put(1, note_on);
-        input.put(2, sqr_width);
+        input.put(1, sqr_width);
     }
     fn typename(&self) -> &str{ "SqrOsc" }
-    fn input_count(&self) -> usize { 3 }
+    fn input_count(&self) -> usize { 2 }
     fn output_count(&self) -> usize { 1 }
     fn port(&self, name: &str) -> Port{
         match name {
             "output" => OUT,
             "freq" => FREQ,
-            "note_on" => NOTE_ON,
             "square_width" => SQUARE_WIDTH,
             _ => panic!("Unknown port {}/{}", self.typename(), name)
         }

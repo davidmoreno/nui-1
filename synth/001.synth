@@ -1,26 +1,22 @@
 block osc1 sinosc
-connect midi:note_on osc1:note_on
 connect midi:freq osc1:freq
 block mosc1 multiply
 connect midi:S1 mosc1:a
 connect osc1 mosc1:b
 
 block osc2 sawosc
-connect midi:note_on osc2:note_on
 connect midi:freq osc2:freq
 block mosc2 multiply
 connect midi:S2 mosc2:a
 connect osc2 mosc2:b
 
 block osc3 triosc
-connect midi:note_on osc3:note_on
 connect midi:freq osc3:freq
 block mosc3 multiply
 connect midi:S3 mosc3:a
 connect osc3 mosc3:b
 
 block osc4 sqrosc
-connect midi:note_on osc4:note_on
 connect midi:freq osc4:freq
 connect midi:H osc4:square_width
 block mosc4 multiply
@@ -37,8 +33,8 @@ block env envelope
 connect midi:R1 env:attack
 connect midi:R2 env:decay
 connect midi:R3 env:sustain
-connect midi:R4 env:sustain_level
-connect midi:R5 env:release
+connect midi:R4 env:release
+connect midi:R5 env:sustain_level
 connect midi:note_on env:note_on
 
 block mul multiply
@@ -54,10 +50,10 @@ block master multiply
 connect vcf master:a
 connect midi:S9 master:b
 
-midi_cc R1 1
-midi_cc R2 20
-midi_cc R3 20
-midi_cc R4 127
-midi_cc R5 20
+midi_cc R1 0.1
+midi_cc R2 0.20
+midi_cc R3 0.20
+midi_cc R4 0.5
+midi_cc R5 0.60
 
 output master

@@ -175,7 +175,11 @@ impl Synth{
                 let block = &self.blocks[pb].block;
                 // println!("Put io");
                 for port_in in 0..block.input_count() {
-                    audiobuffers.put(self.get_input_port_number(BlockId(block_id), Port::new(port_in)), inputs.get(port_in).unwrap() );
+                    audiobuffers.put(
+                        self.get_input_port_number(BlockId(block_id), Port::new(port_in)),
+                        inputs.get(port_in)
+                            .expect(format!("Invalid input port in at {}/{}", block_id, port_in).as_str())
+                        );
                 }
                 for port_out in 0..block.output_count() {
                     let op = outputs.get(port_out).expect(format!("ERROR {} forgot to return buffer {}", block.typename(), port_out).as_str());

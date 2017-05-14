@@ -1,6 +1,7 @@
 use std::fmt;
 use port;
 use std::iter::IntoIterator;
+use std::ops::Index;
 
 pub struct AudioBuffer{
     data: Box<Vec<f32>>
@@ -9,6 +10,18 @@ pub struct AudioBuffer{
 impl AudioBuffer{
     pub fn new(size: usize) -> AudioBuffer{
         AudioBuffer{ data: Box::new(vec![0.0; size]) }
+    }
+    // To be used as little as possible
+    pub fn set(&mut self, at: usize, value: f32){
+        self.data[at]=value;
+    }
+}
+
+impl Index<usize> for AudioBuffer{
+    type Output = f32;
+
+    fn index(&self, index: usize) -> &f32 {
+        &(*self.data)[index]
     }
 }
 
