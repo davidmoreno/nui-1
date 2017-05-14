@@ -9,4 +9,5 @@ pub mod adder;
 pub mod multiply;
 pub mod mixer;
 pub mod moog_filter;
+pub mod filter2;
 pub mod quantizer;

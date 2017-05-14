@@ -1,0 +1,59 @@
+block osc1 sinosc
+connect midi:freq osc1:freq
+block mosc1 multiply
+connect midi:S1 mosc1:a
+connect osc1 mosc1:b
+
+block osc2 sawosc
+connect midi:freq osc2:freq
+block mosc2 multiply
+connect midi:S2 mosc2:a
+connect osc2 mosc2:b
+
+block osc3 triosc
+connect midi:freq osc3:freq
+block mosc3 multiply
+connect midi:S3 mosc3:a
+connect osc3 mosc3:b
+
+block osc4 sqrosc
+connect midi:freq osc4:freq
+connect midi:H osc4:square_width
+block mosc4 multiply
+connect midi:S4 mosc4:a
+connect osc4 mosc4:b
+
+block osc_mixer adder
+connect mosc1 osc_mixer:a
+connect mosc2 osc_mixer:b
+connect mosc3 osc_mixer:c
+connect mosc4 osc_mixer:d
+
+block env envelope
+connect midi:R1 env:attack
+connect midi:R2 env:decay
+connect midi:R3 env:sustain
+connect midi:R4 env:release
+connect midi:R5 env:sustain_level
+connect midi:note_on env:note_on
+
+block mul multiply
+connect midi:R7 mul:a
+connect env mul:b
+
+block vcf filter2
+connect osc_mixer vcf
+connect mul vcf:cutoff
+connect midi:R8 vcf:resonance
+
+block master multiply
+connect vcf master:a
+connect midi:S9 master:b
+
+midi_cc R1 0.1
+midi_cc R2 0.20
+midi_cc R3 0.20
+midi_cc R4 0.5
+midi_cc R5 0.60
+
+output master
