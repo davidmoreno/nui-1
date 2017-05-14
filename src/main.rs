@@ -19,7 +19,7 @@ use synthconfig::SynthConfig;
 use reader::read_synth;
 
 fn main() {
-    let mut synth = read_synth("synth/002.synth");
+    let mut synth = read_synth("synth/001.synth");
 
 /*
     jack_run(synth, &midi_event_factory)

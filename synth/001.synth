@@ -41,13 +41,20 @@ block mul multiply
 connect osc_mixer mul:a
 connect env mul:b
 
-block vcf moog_vcf
+block vcf filter2
 connect mul vcf
 connect midi:R7 vcf:cutoff
 connect midi:R8 vcf:resonance
 
+block lfo1 lfo
+connect midi:S7 lfo1:freq
+
+block tremolo multiply
+connect lfo1 tremolo:a
+connect vcf tremolo:b
+
 block master multiply
-connect vcf master:a
+connect tremolo master:a
 connect midi:S9 master:b
 
 midi_cc R1 0.1

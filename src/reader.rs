@@ -6,7 +6,10 @@ use colored::*;
 
 use synth::{Synth, BlockId};
 use processblock::ProcessBlock;
-use blocks::{sinosc, sqrosc, midi, envelope, multiply, mixer, moog_filter, filter2, triosc, sawosc, quantizer, fixed, adder};
+use blocks::{
+    sinosc, sqrosc, triosc, sawosc,
+    midi, envelope, multiply, mixer, moog_filter, filter2,  
+    quantizer, fixed, adder, lfo};
 use port::Port;
 
 pub fn read_synth(filename: &str) -> Synth{
@@ -77,6 +80,7 @@ pub fn create_block(synth: &mut Synth, name: &str) -> BlockId{
         "filter2" => filter2::Filter2::new(),
         "quantizer" => quantizer::Quantizer::new(),
         "mixer" => mixer::Mixer::new(),
+        "lfo" => lfo::LFO::new(),
         _ => panic!("Unknown block type: {}", name.yellow())
     };
 
