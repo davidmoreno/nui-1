@@ -1,6 +1,6 @@
 use audiobuffer::*;
 use processblock::ProcessBlock;
-use processblock::SynthConfig;
+use synthconfig::SynthConfig;
 use port::Port;
 
 #[derive(Debug)]
@@ -24,7 +24,8 @@ impl SawOsc{
 
 impl ProcessBlock for SawOsc {
     fn setup(&mut self, config: &SynthConfig){
-        self.sample_rate = config.sample_rate as f32
+        self.sample_rate = config.sample_rate as f32;
+        println!("{:?}", self);
     }
     fn process(&mut self, input: &mut AudioBufferVector, output: &mut AudioBufferVector){
         let mut out = output.get(0).unwrap();

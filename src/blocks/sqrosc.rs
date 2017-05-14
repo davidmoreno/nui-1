@@ -1,6 +1,6 @@
 use audiobuffer::*;
 use processblock::ProcessBlock;
-use processblock::SynthConfig;
+use synthconfig::SynthConfig;
 use port::Port;
 
 #[derive(Debug)]

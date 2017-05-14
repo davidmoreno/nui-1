@@ -9,11 +9,13 @@ mod blocks;
 mod port;
 mod midi;
 mod reader;
+mod synthconfig;
 
 use jack::prelude::{AudioOutPort, AudioOutSpec, Client, JackControl, ClosureProcessHandler,
                     ProcessScope, AsyncClient, client_options, MidiInSpec, MidiInPort};
 use std::sync::{Arc, Mutex};
 use synth::Synth;
+use synthconfig::SynthConfig;
 use reader::read_synth;
 
 fn main() {
@@ -28,7 +30,9 @@ fn jack_run(synth: Synth, midi_event_factory: &MidiEventFactory){
     let mut out_port = client.register_port("output", AudioOutSpec::default()).unwrap();
     let shower = client.register_port("midi", MidiInSpec::default()).unwrap();
 
-    synth.pre_work();
+    let mut config = SynthConfig::new();
+    config.sample_rate(client.sample_rate() as f32);
+    synth.pre_work(&config);
 
     let synth = Arc::new(Mutex::new(synth));
 
@@ -54,6 +58,15 @@ fn jack_run(synth: Synth, midi_event_factory: &MidiEventFactory){
     });
 
     let active_client = AsyncClient::new(client, (), process).unwrap();
+
+    // Fixme more generic.
+    active_client.connect_ports_by_name("nui-1:output","system:playback_1").expect("Cant connect 1");
+    active_client.connect_ports_by_name("nui-1:output","system:playback_2").expect("Cant connect 2");
+
+    active_client.connect_ports_by_name("system:midi_capture_1", "nui-1:midi").expect("Cant connect 3");
+    active_client.connect_ports_by_name("system:midi_capture_2", "nui-1:midi").expect("Cant connect 4");
+    active_client.connect_ports_by_name("system:midi_capture_3", "nui-1:midi").expect("Cant connect 5");
+    active_client.connect_ports_by_name("system:midi_capture_4", "nui-1:midi").expect("Cant connect 6");
 
     loop {
         ::std::thread::sleep( ::std::time::Duration::new(100, 0) )

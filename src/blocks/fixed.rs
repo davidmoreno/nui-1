@@ -1,7 +1,6 @@
 use audiobuffer::*;
 use port::Port;
 use processblock::ProcessBlock;
-use processblock::SynthConfig;
 
 pub const OUTPUT_COUNT:i8 = 1;
 pub const INPUT_COUNT:i8 = 0;

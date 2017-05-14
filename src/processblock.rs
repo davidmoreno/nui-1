@@ -1,11 +1,7 @@
 use audiobuffer::*;
 use std::fmt;
 use port::Port;
-
-#[derive(Debug)]
-pub struct SynthConfig{
-    pub sample_rate: i32,
-}
+use synthconfig::SynthConfig;
 
 pub trait ProcessBlock : fmt::Debug + Send{
     fn setup(&mut self, &SynthConfig) { () }

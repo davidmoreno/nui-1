@@ -1,6 +1,7 @@
 use audiobuffer::*;
 use port::Port;
-use processblock::{ProcessBlock, SynthConfig};
+use processblock::ProcessBlock;
+use synthconfig::SynthConfig;
 
 #[derive(Debug)]
 pub struct MoogFilter{
@@ -18,6 +19,8 @@ pub const CUTOFF:Port = Port{nr:1};
 pub const RESONANCE:Port = Port{nr:2};
 
 pub const OUT:Port = Port{nr:0};
+const MAX_FREQ:f32 = 8000.0;
+
 
 impl MoogFilter{
     pub fn new() -> Box<MoogFilter>{
@@ -56,7 +59,7 @@ impl ProcessBlock for MoogFilter{
 
         for (o, i, c, r) in izip!(&mut output, &input, &cutoff, &resonance){
             // This coeficients could be set outside, but as we want to react in-frame to changes, must be here.
-            let f = 2.0 * c * 4000.0 / fs;
+            let f = 2.0 * c * MAX_FREQ / fs;
             let k = 3.6*f - 1.6*f*f -1.0;
             let p = (k+1.0)*0.5;
             let scale = f32::exp(1.0-p)*1.386249;

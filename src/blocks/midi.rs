@@ -1,7 +1,6 @@
 use audiobuffer::*;
 use port::Port;
 use processblock::ProcessBlock;
-use processblock::SynthConfig;
 use ::midi::event::MidiEvent;
 use ::midi::mapper::Mapper;
 use jack::prelude::RawMidi;

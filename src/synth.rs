@@ -2,6 +2,7 @@ use audiobuffer::*;
 use processblock::ProcessBlock;
 use port::Port;
 use jack::prelude::RawMidi;
+use synthconfig::SynthConfig;
 
 #[derive(Debug, Clone, Copy)]
 pub struct BlockId(usize);
@@ -123,7 +124,7 @@ impl Synth{
         BlockId(0) // always the first block is the midi connector
     }
 
-    pub fn pre_work(&mut self){
+    pub fn pre_work(&mut self, config: &SynthConfig){
         let workdata = WorkData{
             workorder: self.calculate_work_order(),
             //println!("Workorder is {:?}", workorder);
@@ -134,6 +135,9 @@ impl Synth{
             output: AudioBuffer::new(self.buffer_size)
         };
         self.workdata = Some(workdata);
+        for bl in &mut self.blocks{
+            bl.block.setup(config);
+        }
     }
     pub fn work(&mut self) -> &AudioBuffer{
         let mut workdata_option = self.workdata.take();
