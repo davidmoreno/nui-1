@@ -10,6 +10,7 @@ pub struct MIDI{
     freq: f32,
     velocity: f32,
     last_note: u8,
+    note_buffer: Vec<u8>,
     cc: Vec<f32>,
     note_changed: bool,
     mapper: Mapper,
@@ -28,6 +29,7 @@ impl MIDI{
             velocity: 0.0,
             last_note: 0,
             note_changed: false,
+            note_buffer: vec![0; 8],
             cc: vec![0.5; MAX_CC],
             mapper: Mapper::from_file("synth/ccmap.map")
         })
@@ -41,11 +43,22 @@ impl MIDI{
                 self.velocity=velocity as f32/127.0;
                 self.last_note=note;
                 self.note_changed=true;
+                self.note_on(note);
             }
             MidiEvent::NoteOff{ note, velocity: _, channel: _, timestamp: _ } => {
                 if note == self.last_note{
-                    self.velocity=0.0;
+                    match self.note_off(note) {
+                        None => {
+                            self.velocity=0.0;
+                        },
+                        Some(note) => {
+                            self.last_note=note;
+                            self.freq=note_to_freq(note as f32);
+                            self.note_changed = true;
+                        }
+                    };
                 }
+                self.note_off(note);
             }
             MidiEvent::ControllerChange{ value, controller, channel: _, timestamp: _ } => {
                 self.cc[controller as usize]=value as f32/127.0;
@@ -53,6 +66,27 @@ impl MIDI{
             _ => {
             }
         }
+    }
+    fn note_on(&mut self, note: u8){
+        for n in &mut self.note_buffer{
+            if *n==0 {
+                *n = note;
+                return;
+            }
+        }
+    }
+    // marks note off, returns next should be sounding depending on policy (FIFO)
+    fn note_off(&mut self, note: u8) -> Option<u8> {
+        let mut lastn = None;
+        for n in &mut self.note_buffer{
+            if *n == note {
+                *n = 0;
+            }
+            else if *n != 0{
+                lastn = Some(*n);
+            }
+        }
+        lastn
     }
     pub fn set_cc_value(&mut self, cc: &str, value: f32){
         let cc = self.mapper.get_cc(cc).nr;
