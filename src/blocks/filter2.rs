@@ -58,7 +58,6 @@ impl ProcessBlock for Filter2{
         let resonance = inputs.get(RESONANCE.nr).unwrap();
 
         let fs = self.sample_rate;
-        let mut c:f32 = 0.0;
         let mut a1 = self.a1;
         let mut a2 = self.a2;
         let mut a3 = self.a3;
@@ -72,7 +71,7 @@ impl ProcessBlock for Filter2{
 
         for (o, i, cf, r) in izip!(&mut output, &input, &cutoff, &resonance){
             // This coeficients could be set outside, but as we want to react in-frame to changes, must be here.
-            c = 1.0 / f32::tan(::std::f32::consts::PI * cf * MAX_FREQ / fs);
+            let c = 1.0 / f32::tan(::std::f32::consts::PI * cf * MAX_FREQ / fs);
 
             a1 = 1.0 / (1.0 + r*c + c*c);
             a2 = 2.0 * a1;

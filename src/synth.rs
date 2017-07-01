@@ -206,9 +206,9 @@ impl Synth{
         self.workdata=workdata_option;
         &self.workdata.as_ref().unwrap().output
     }
-    pub fn post_work(&mut self){
-        self.workdata=None;
-    }
+    // pub fn post_work(&mut self){
+    //     self.workdata=None;
+    // }
     pub fn send_midi(&mut self, event: RawMidi){
         let genblock = &mut self.blocks[0].block;
         let midi = &mut genblock.into_midi().unwrap();
@@ -255,8 +255,6 @@ impl Synth{
 
 #[cfg(test)]
 mod tests{
-    use super::*;
-
     #[test]
     fn synth_to_stdout(){
 

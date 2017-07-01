@@ -14,7 +14,6 @@ mod synthconfig;
 use jack::prelude::{AudioOutPort, AudioOutSpec, Client, JackControl, ClosureProcessHandler,
                     ProcessScope, AsyncClient, client_options, MidiInSpec, MidiInPort};
 use std::sync::{Arc, Mutex};
-use synth::Synth;
 use synthconfig::SynthConfig;
 use reader::read_synth;
 
@@ -72,7 +71,7 @@ fn jack_run(synth: Synth, midi_event_factory: &MidiEventFactory){
         ::std::thread::sleep( ::std::time::Duration::new(100, 0) )
     }
 
-    synth.lock().unwrap().post_work();
+    // synth.lock().unwrap().post_work();
 }
 
 
@@ -83,12 +82,14 @@ mod tests{
 
     #[test]
     fn synth_loops(){
-        let mut synth = read_synth("synt/001.yaml");
+        let mut synth = read_synth("synth/001.synth");
+        let mut config = SynthConfig::new();
+        config.sample_rate(48000.0);
 
-        synth.pre_work();
-        for i in 0..1024{
+        synth.pre_work(&config);
+        for _i in 0..1024{
             synth.work();
         }
-        synth.post_work();
+        // synth.post_work();
     }
 }

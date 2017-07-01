@@ -16,9 +16,10 @@ pub struct Mapper{
 
 
 impl Mapper{
-    pub fn new() -> Self{
-        Self{ ccmap: HashMap::new(), alias: HashMap::new() }
-    }
+    // Only used from_file
+    // pub fn new() -> Self{
+    //     Self{ ccmap: HashMap::new(), alias: HashMap::new() }
+    // }
     pub fn from_file(filename: &str) -> Self{
         let mut ccmap = HashMap::new();
         let mut alias = HashMap::new();

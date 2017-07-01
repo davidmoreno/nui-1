@@ -1,5 +1,4 @@
 use std::fmt;
-use port;
 use std::iter::IntoIterator;
 use std::ops::Index;
 
@@ -60,7 +59,7 @@ impl fmt::Debug for AudioBuffer{
 impl fmt::Display for AudioBuffer{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for s in self.into_iter(){
-            write!(f, "{} ", s);
+            write!(f, "{} ", s)?;
         }
         write!(f, "")
     }

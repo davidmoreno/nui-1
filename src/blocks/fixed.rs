@@ -2,9 +2,6 @@ use audiobuffer::*;
 use port::Port;
 use processblock::ProcessBlock;
 
-pub const OUTPUT_COUNT:i8 = 1;
-pub const INPUT_COUNT:i8 = 0;
-
 pub const OUT:Port = Port{nr:0};
 
 #[derive(Debug)]

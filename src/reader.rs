@@ -8,9 +8,8 @@ use synth::{Synth, BlockId};
 use processblock::ProcessBlock;
 use blocks::{
     sinosc, sqrosc, triosc, sawosc,
-    midi, envelope, multiply, mixer, moog_filter, filter2,  
+    envelope, multiply, mixer, moog_filter, filter2,
     quantizer, fixed, adder, lfo};
-use port::Port;
 
 pub fn read_synth(filename: &str) -> Synth{
     let mut synth = Synth::new();
@@ -23,7 +22,7 @@ pub fn read_synth(filename: &str) -> Synth{
         File::open(filename)
             .expect(format!("ERROR cant open {}!", filename).as_str()
         ));
-    for (lineno, l) in file.lines().enumerate(){
+    for (_lineno, l) in file.lines().enumerate(){
         let l = l.unwrap();
         if l.len()==0 {
             continue;
@@ -81,6 +80,7 @@ pub fn create_block(synth: &mut Synth, name: &str) -> BlockId{
         "quantizer" => quantizer::Quantizer::new(),
         "mixer" => mixer::Mixer::new(),
         "lfo" => lfo::LFO::new(),
+        "fixed" => fixed::Fixed::new(0.0),
         _ => panic!("Unknown block type: {}", name.yellow())
     };
 
