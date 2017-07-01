@@ -1,0 +1,5 @@
+block osc1 sampleosc
+connect midi:freq osc1:freq
+connect midi:note_on osc1:note_on
+
+output osc1

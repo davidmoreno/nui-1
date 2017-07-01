@@ -2,6 +2,7 @@ pub mod sinosc;
 pub mod triosc;
 pub mod sqrosc;
 pub mod sawosc;
+pub mod sampleosc;
 pub mod midi;
 pub mod fixed;
 pub mod envelope;

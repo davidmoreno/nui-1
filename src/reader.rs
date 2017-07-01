@@ -9,7 +9,7 @@ use processblock::ProcessBlock;
 use blocks::{
     sinosc, sqrosc, triosc, sawosc,
     envelope, multiply, mixer, moog_filter, filter2,
-    quantizer, fixed, adder, lfo};
+    quantizer, fixed, adder, lfo, sampleosc};
 
 pub fn read_synth(filename: &str) -> Synth{
     let mut synth = Synth::new();
@@ -81,6 +81,7 @@ pub fn create_block(synth: &mut Synth, name: &str) -> BlockId{
         "mixer" => mixer::Mixer::new(),
         "lfo" => lfo::LFO::new(),
         "fixed" => fixed::Fixed::new(0.0),
+        "sampleosc" => sampleosc::SampleOsc::new(),
         _ => panic!("Unknown block type: {}", name.yellow())
     };
 

@@ -10,6 +10,9 @@ impl AudioBuffer{
     pub fn new(size: usize) -> AudioBuffer{
         AudioBuffer{ data: Box::new(vec![0.0; size]) }
     }
+    pub fn from(data: Vec<f32>) -> AudioBuffer{
+        AudioBuffer{ data: Box::new(data) }
+    }
     // To be used as little as possible
     pub fn set(&mut self, at: usize, value: f32){
         self.data[at]=value;

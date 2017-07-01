@@ -1,6 +1,7 @@
 #[macro_use] extern crate itertools;
 extern crate jack;
 extern crate colored;
+extern crate byteorder;
 
 mod audiobuffer;
 mod processblock;
@@ -10,6 +11,7 @@ mod port;
 mod midi;
 mod reader;
 mod synthconfig;
+mod sample;
 
 use jack::prelude::{AudioOutPort, AudioOutSpec, Client, JackControl, ClosureProcessHandler,
                     ProcessScope, AsyncClient, client_options, MidiInSpec, MidiInPort};
@@ -83,9 +85,9 @@ mod tests{
     #[test]
     fn synth_loops(){
         let mut synth = read_synth("synth/001.synth");
+
         let mut config = SynthConfig::new();
         config.sample_rate(48000.0);
-
         synth.pre_work(&config);
         for _i in 0..1024{
             synth.work();
