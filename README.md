@@ -32,3 +32,25 @@ are some internal design decisions:
   buffer per connection, which is used first to write the audio data, and on
   subsequent modules, to read it. It may consume more memory, but avoids all
   allocations.
+
+TODO list
+
+* [x] Jack Support: Audio and MIDI
+* [ ] Sample MIDI precission (now only block precission)
+* [x] Sin, Tri, Saw and Sqr Oscillators
+* [x] ADSR Envelope
+* [x] Filters
+* [x] Two channel mixer
+* [x] Two channel multiplier
+* [x] LFO
+* [ ] Program change changes the synth
+* [ ] Quantizer
+* [ ] Noise OSC
+* [ ] Sample loader (one sample all notes)
+* [ ] Polysample loader (Can set sample per note an dinterpolate for unknown)
+* [ ] Polyphonic
+* [ ] Import synths from synths (to load a main synth def and then set
+  the preset)
+* [ ] Work on Raspberry Pi
+* [ ] Chorus
+* [ ] Delay
