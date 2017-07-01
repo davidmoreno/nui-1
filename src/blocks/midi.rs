@@ -115,8 +115,10 @@ impl ProcessBlock for MIDI{
             let mut data = output.get(port).unwrap();
 
             let v = self.cc[i as usize];
-            for o in &mut data{
-                *o = v;
+            if data.data[0] != v {
+                for o in &mut *data.data{
+                    *o = v;
+                }
             }
 
             output.put(port, data);

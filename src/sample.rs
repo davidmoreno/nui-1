@@ -74,10 +74,10 @@ impl Sample{
 
         let mut tmpdata = Vec::<f32>::new( ); // Could pre allocate size, but I dont trust the file at all
         loop{
-            match f.read_u16::<LittleEndian>() {
+            match f.read_i16::<LittleEndian>() {
                 Err(_) => break,
                 Ok(sample) => {
-                    let fsample: f32 = (sample as f32) / ((2<<15) as f32);
+                    let fsample: f32 = (sample as f32) / 32000.0;
                     tmpdata.push(fsample)
                 }
             }

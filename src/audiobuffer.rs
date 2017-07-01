@@ -3,7 +3,7 @@ use std::iter::IntoIterator;
 use std::ops::Index;
 
 pub struct AudioBuffer{
-    data: Box<Vec<f32>>
+    pub data: Box<Vec<f32>>
 }
 
 impl AudioBuffer{
