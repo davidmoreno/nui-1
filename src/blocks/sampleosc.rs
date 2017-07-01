@@ -33,13 +33,23 @@ impl ProcessBlock for SampleOsc {
         let mut out = output.get(0).unwrap();
         let freq = input.get(0).unwrap();
         let note_on = input.get(1).unwrap();
+        let sr_ratio = self.samplerate / self.sample.samplerate;
+        let sample_freq = self.sample.freq;
+
         for (o, f, n) in izip!(&mut out, &freq, &note_on){
             if *n == 0.0 {
                 self.phase=0.0;
             }
-            self.phase+=f/self.samplerate;
-            self.phase = self.phase % 1.0;
-            *o = (self.phase * 2.0) - 1.0
+            let note_ratio = f / sample_freq;
+            let step = note_ratio * sr_ratio;
+            self.phase+=step;
+            let uiphase = self.phase as usize;
+            if uiphase >= self.sample.data.len() {
+                *o = 0.0;
+            }
+            else{
+                *o = self.sample.data[uiphase];
+            }
         }
 
         output.put(0, out);

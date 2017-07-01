@@ -17,6 +17,9 @@ impl AudioBuffer{
     pub fn set(&mut self, at: usize, value: f32){
         self.data[at]=value;
     }
+    pub fn len(&self) -> usize{
+        self.data.len()
+    }
 }
 
 impl Index<usize> for AudioBuffer{

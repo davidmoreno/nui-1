@@ -9,9 +9,9 @@ use std::io::prelude::*;
 
 #[derive(Debug)]
 pub struct Sample{
-    data: AudioBuffer,
-    freq: f32, // which frequency is this sound in, for example 440.0 for A4
-    samplerate: f32, // whats the sampe rate
+    pub data: AudioBuffer,
+    pub freq: f32, // which frequency is this sound in, for example 440.0 for A4
+    pub samplerate: f32, // whats the sampe rate
 }
 
 #[derive(Debug)]
@@ -64,7 +64,7 @@ impl Sample{
         let block_align = f.read_u16::<LittleEndian>()?;
         let bits_per_sample = f.read_u16::<LittleEndian>()?;
 
-        println!("{} has {} bytes of data // {} {} {} {} {} {} {}", filename, file_size, fmt_size, format, channels, sample_rate, bytes, block_align, bits_per_sample);
+        println!("{} has {} bytes of data // {} format {} channels {} sample_rate {} {} {} bits_per_sample {}", filename, file_size, fmt_size, format, channels, sample_rate, bytes, block_align, bits_per_sample);
 
         // Might have longer header, not my problem
         f.seek(SeekFrom::Start((fmt_size_position + fmt_size) as u64))?;
