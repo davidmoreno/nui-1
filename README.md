@@ -46,7 +46,7 @@ TODO list
 * [ ] Program change changes the synth
 * [ ] Quantizer
 * [ ] Noise OSC
-* [ ] Sample loader (one sample all notes)
+* [x] Sample loader (one sample all notes)
 * [ ] Polysample loader (Can set sample per note an dinterpolate for unknown)
 * [ ] Polyphonic
 * [ ] Import synths from synths (to load a main synth def and then set
