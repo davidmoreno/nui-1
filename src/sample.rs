@@ -81,6 +81,15 @@ impl Sample{
                     tmpdata.push(fsample)
                 }
             }
+            if channels>1 {
+                for _i in 1..channels {
+                    // Ignore only use first channel
+                    match f.read_i16::<LittleEndian>(){
+                        Ok(_ignore_sample) => (),
+                        Err(_) => break
+                    }
+                }
+            }
         }
         let ab = AudioBuffer::from(tmpdata);
 
